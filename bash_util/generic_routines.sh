@@ -20,9 +20,12 @@ lsf_process_running() {
 	    sleep 10
 	    if [ $? -eq 0 ]; then
 	        # The background process is _still_ running - kill it and re-start
-	        kill -9 $bgProcId > /dev/null
-		lsf_list > lsf_list.$arg.aux &
-		bgProcId=$!
+	        kill -9 $bgProcId > /dev/null 2>&1
+		if [ $? -eq 0 ]; then 
+		    # If $bgProcId was in fact killed, start another one
+		    lsf_list > lsf_list.$arg.aux &
+		    bgProcId=$!
+		fi
 	    fi
 	fi
     done
