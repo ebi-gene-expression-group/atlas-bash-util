@@ -34,3 +34,8 @@ lsf_process_running() {
     rm -rf lsf_list.$arg.aux
     return $ret
 }
+
+function capitalize_first_letter {
+    arg=$1
+    echo -n $arg | sed 's/\(.\).*/\1/' | tr "[:lower:]" "[:upper:]"; echo -n $arg | sed 's/.\(.*\)/\1/'
+}
