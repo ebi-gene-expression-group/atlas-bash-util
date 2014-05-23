@@ -46,14 +46,14 @@ importMageTabFromAE2() {
     middle=`echo $expAcc | awk -F"-" '{print $2}'`
     cp /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.idf.txt ${expAcc}/${expAcc}.idf.txt
     if [ ! -s $expAcc/$expAcc.idf.txt ]; then
-	echo "[ERROR] Failed to download: /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.idf.txt" >> $log
+	echo "[ERROR] Failed to download: /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.idf.txt" >&2
 	return  1
     fi
 
     middle=`echo $expAcc | awk -F"-" '{print $2}'`
     cp /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.sdrf.txt ${expAcc}/${expAcc}.sdrf.txt
     if [ ! -s $expAcc/$expAcc.sdrf.txt ]; then
-	echo "[ERROR] Failed to download: /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.sdrf.txt" >> $log
+	echo "[ERROR] Failed to download: /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.sdrf.txt" >&2
         return 1
     fi
 
@@ -65,18 +65,17 @@ applyFixes() {
     exp=$1
     fixesFile=$2
     fileTypeToBeFixed=$3
-    log=$4
 
     # Apply factor type fixes in ${fileTypeToBeFixed} file
     for l in $(cat $ATLAS_PROD/sw/atlasprod/experiment_metadata/$fixesFile | sed 's|[[:space:]]*$||g');
     do
 	if [ ! -s "$exp/$exp.${fileTypeToBeFixed}.txt" ]; then
-	    echo "ERROR: $exp/$exp.${fileTypeToBeFixed}.txt not found or is empty" >> $log
+	    echo "ERROR: $exp/$exp.${fileTypeToBeFixed}.txt not found or is empty" >&2
 	    return 1
 	fi 
 	echo $l | grep -P '\t' > /dev/null
 	if [ $? -ne 0 ]; then
-	    echo  "WARNING: line: '$l' in automatic_fixes_properties.txt is missing a tab character - not applying the fix "  >> $log
+	    echo  "WARNING: line: '$l' in automatic_fixes_properties.txt is missing a tab character - not applying the fix " 
 	fi
 	correct=`echo $l | awk -F"\t" '{print $1}'`
 	toBeReplaced=`echo $l | awk -F"\t" '{print $2}'`
@@ -97,19 +96,19 @@ applyAllFixesForExperiment() {
     # Apply factor type fixes in idf file
     applyFixes $exp automatic_fixes_properties.txt idf
     if [ $? -ne 0 ]; then
-	echo "ERROR: Applying factor type fixes in idf file for $exp failed" 
+	echo "ERROR: Applying factor type fixes in idf file for $exp failed" >&2
 	return 1
     fi
     # Apply factor/sample characteristic type fixes to sdrf
     applyFixes $exp automatic_fixes_properties.txt sdrf 
     if [ $? -ne 0 ]; then
-	echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" 
+	echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
 	return 1
     fi
     # Apply sample characteristic/factor value fixes in sdrf file
     applyFixes $exp automatic_fixes_values.txt sdrf
     if [ $? -ne 0 ]; then
-	echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" 
+	echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
 	return 1
     fi
 }
