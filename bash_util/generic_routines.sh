@@ -39,3 +39,23 @@ function capitalize_first_letter {
     arg=$1
     echo -n $arg | sed 's/\(.\).*/\1/' | tr "[:lower:]" "[:upper:]"; echo -n $arg | sed 's/.\(.*\)/\1/'
 }
+
+importMageTabFromAE2() {
+    expAcc=$1
+
+    middle=`echo $expAcc | awk -F"-" '{print $2}'`
+    cp /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.idf.txt ${expAcc}/${expAcc}.idf.txt
+    if [ ! -e $expAcc/$expAcc.idf.txt ]; then
+	echo "[ERROR] Failed to download: /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.idf.txt" >> $log
+	return  1
+    fi
+
+    middle=`echo $expAcc | awk -F"-" '{print $2}'`
+    cp /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.sdrf.txt ${expAcc}/${expAcc}.sdrf.txt
+    if [ ! -e $expAcc/$expAcc.sdrf.txt ]; then
+	echo "[ERROR] Failed to download: /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.sdrf.txt" >> $log
+        return 1
+    fi
+
+    return 0
+}
