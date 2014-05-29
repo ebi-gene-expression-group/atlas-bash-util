@@ -116,7 +116,7 @@ applyAllFixesForExperiment() {
 # Restriction to run prod scripts as the prod user only
 check_prod_user() {
     user=`whoami`
-    if [ "$user" -ne "fg_atlas" ]; then
+    if [ "$user" != "fg_atlas" ]; then
 	echo "ERROR: You need be sudo-ed as fg_atlas to run this script" >&2
 	return 1
     fi
