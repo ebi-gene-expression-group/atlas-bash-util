@@ -112,3 +112,19 @@ applyAllFixesForExperiment() {
 	return 1
     fi
 }
+
+# Restriction to run prod scripts as the prod user only
+check_prod_user() {
+    user=`whoami`
+    if [ "$user" -ne "fg_atlas" ]; then
+	echo "ERROR: You need be sudo-ed as fg_atlas to run this script" >&2
+	return 1
+    fi
+    return 0
+}
+
+# Get sudo-ed user
+get_sudoed_user() {
+    realUser=`TTYTEST=$(ps | awk '{print $2}' |tail -1); ps -ef |grep "$TTYTEST$" |awk '{print $1}'`
+    echo $realUser
+}
