@@ -11,7 +11,7 @@ lsf_process_running() {
 
     lsfListOutput=`lsf_list 10`
     tries=1
-    while [ $? -ne 0 ]; then
+    while [ $? -ne 0 ]; do
         tries=$[$tries+1]
 	if [ $tries -le 5 ]; then 
             lsfListOutput=`lsf_list 10`
