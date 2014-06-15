@@ -4,18 +4,19 @@ IFS="
 "
 
 # This procedure uses lsf_list to check if process $arg is running. Because lsf_list has been known to hang (presumably because
-# of the underlying bjobs hanging when the LSF cluster is very busy), this function runs lsf_list in the background, and kills
-# and re-tries it if it doesn't come back within 10 seconds.
+# of the underlying bjobs hanging when the LSF cluster is very busy), this function includes 5 re-tries
 lsf_process_running() {
     arg=$1
-
-    lsfListOutput=`lsf_list 10`
     tries=1
-    while [ $? -ne 0 ]; do
+    lsfListOutput=`lsf_list 10`
+    exitStatus=$?
+    while [ "$exitStatus" -ne 0 ]; do
         tries=$[$tries+1]
 	if [ $tries -le 5 ]; then 
             lsfListOutput=`lsf_list 10`
+	    exitStatus=$?
 	else
+	    exitStatus=0
 	    echo "ERROR: Tried to run lsf_list $tries times - it timed out ever time"  >&2
 	    return 255
 	fi
