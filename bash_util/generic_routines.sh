@@ -129,3 +129,13 @@ get_sudoed_user() {
     realUser=`TTYTEST=$(ps | awk '{print $2}' |tail -1); ps -ef |grep "$TTYTEST$" |awk '{print $1}'`
     echo $realUser
 }
+
+get_dbpass() {
+    dbUser=$1
+    if [ -e "${ATLAS_PROD}/sw/${dbUser}" ]; then
+	cat ${ATLAS_PROD}/sw/${dbUser}
+    else
+	echo "ERROR: Failed to retrieve DB password" >&2
+	return 1
+    fi
+}
