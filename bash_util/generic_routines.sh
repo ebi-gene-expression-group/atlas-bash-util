@@ -3,29 +3,11 @@
 IFS="
 "
 
-# This procedure uses lsf_list to check if process $arg is running. Because lsf_list has been known to hang (presumably because
-# of the underlying bjobs hanging when the LSF cluster is very busy), this function includes 5 re-tries
+# This procedure returns 0 if process $arg is running; otherwise it returns 1
 lsf_process_running() {
     arg=$1
-    tries=1
-    lsfListOutput=`lsf_list 5`
-    exitStatus=$?
-    while [ "$exitStatus" -ne 0 ]; do
-        tries=$[$tries+1]
-	if [ $tries -le 5 ]; then
-            lsfListOutput=`lsf_list 5`
-	    exitStatus=$?
-	else
-	    echo "ERROR: Tried to run lsf_list $tries times - it timed out every time"  >&2
-	    break
-	fi
-    done
-    if [ "$exitStatus" -ne 0 ]; then
-	return 255
-    else
-	echo $lsfListOutput | grep "$arg" > /dev/null
-	return $?
-    fi
+    bjobs -l | tr -d "\n" | perl -p -e 's/\s+/ /g' | perl -p -e 's/Job/\nJob/g' | grep 'Job Priority' | grep "$arg" > /dev/null
+    return $?
 }
 
 function capitalize_first_letter {
