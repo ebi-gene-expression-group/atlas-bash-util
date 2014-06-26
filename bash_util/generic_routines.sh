@@ -3,6 +3,12 @@
 IFS="
 "
 
+is_multispecies_experiment() {
+    expAcc=$1
+    echo "E-GEOD-41338 E-GEOD-30352" | grep $expAcc > /dev/null
+    return $?
+}
+
 # This procedure returns 0 if process $arg is running; otherwise it returns 1
 lsf_process_running() {
     arg=$1
