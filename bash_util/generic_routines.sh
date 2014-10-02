@@ -59,7 +59,7 @@ applyFixes() {
 	    echo  "WARNING: line: '$l' in automatic_fixes_properties.txt is missing a tab character - not applying the fix " 
 	fi
 	correct=`echo $l | awk -F"\t" '{print $1}'`
-	toBeReplaced=`echo $l | awk -F"\t" '{print $2}'`
+	toBeReplaced=`echo $l | awk -F"\t" '{print $2}' | sed 's/[^-A-Za-z0-9_ ]/\\\&/g'`
 	perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}.txt
 	perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}.txt
 	if [ "$fixesFile" == "automatic_fixes_properties.txt" ]; then
