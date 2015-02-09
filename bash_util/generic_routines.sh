@@ -54,9 +54,10 @@ applyFixes() {
     exp=$1
     fixesFile=$2
     fileTypeToBeFixed=$3
+    atlasEnv=`atlas_env`
 
     # Apply factor type fixes in ${fileTypeToBeFixed} file
-    for l in $(cat $ATLAS_PROD/sw/atlasinstall_prod/atlasprod/experiment_metadata/$fixesFile | sed 's|[[:space:]]*$||g');
+    for l in $(cat $ATLAS_PROD/sw/atlasinstall_${atlasEnv}/atlasprod/experiment_metadata/$fixesFile | sed 's|[[:space:]]*$||g');
     do
 	if [ ! -s "$exp/$exp.${fileTypeToBeFixed}.txt" ]; then
 	    echo "ERROR: $exp/$exp.${fileTypeToBeFixed}.txt not found or is empty" >&2
