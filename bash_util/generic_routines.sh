@@ -3,6 +3,14 @@
 IFS="
 "
 
+# Returns prod or test, depending on the Atlas environment in which the script calling it is running
+# It is assuming that all atlasinstall_<env>s are under /nfs/ma/home/atlas3-production/sw (it will fail otherwise)
+atlas_env() {
+    scriptDir=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+    atlasInstallSubDir=$(echo $scriptDir | awk -F"/" '{print $7}')
+    echo $atlasInstallSubDir | awk -F"_" '{print $2}'
+}
+
 is_multispecies_experiment() {
     expAcc=$1
     echo "E-GEOD-41338 E-GEOD-30352" | grep $expAcc > /dev/null
