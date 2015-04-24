@@ -119,7 +119,7 @@ get_sudoed_user() {
     echo $realUser
 }
 
-get_dbpass() {
+get_pass() {
     dbUser=$1
     if [ -e "${ATLAS_PROD}/sw/${dbUser}" ]; then
 	cat ${ATLAS_PROD}/sw/${dbUser}
