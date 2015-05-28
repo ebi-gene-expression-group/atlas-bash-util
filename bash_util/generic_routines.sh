@@ -2,6 +2,21 @@
 
 IFS="
 "
+# Send Report
+send_report() {
+    logOut=$1
+    email=$2
+    subject=$3
+    log=`echo $logOut | sed 's|.out||'`
+    numOfNonEmptyLinesInReport=`egrep -v '^$' ${log}.report | wc -l`
+    if [ $numOfNonEmptyLinesInReport -gt 0 ]; then 
+	mailx -s "[atlas3/cron] Process new experiments for $today: $subject" $email < ${log}.report
+	cat ${log}.report >> $log
+    fi
+    rm -rf ${log}.out
+    rm -rf ${log}.err
+    rm -rf ${log}.report
+}
 
 # Returns prod or test, depending on the Atlas environment in which the script calling it is running
 # It is assuming that all atlasinstall_<env>s are under /nfs/ma/home/atlas3-production/sw (it will fail otherwise)
