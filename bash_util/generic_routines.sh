@@ -7,10 +7,14 @@ send_report() {
     logOut=$1
     email=$2
     subject=$3
+    label=$4
+    if [ -z "$label" ]; then
+	label="atlas3"
+    fi
     log=`echo $logOut | sed 's|.out||'`
     numOfNonEmptyLinesInReport=`egrep -v '^$' ${log}.report | wc -l`
     if [ $numOfNonEmptyLinesInReport -gt 0 ]; then 
-	mailx -s "[atlas3/cron] Process new experiments for $today: $subject" $email < ${log}.report
+	mailx -s "[$label/cron] Process new experiments for $today: $subject" $email < ${log}.report
 	cat ${log}.report >> $log
     fi
     rm -rf ${log}.out
