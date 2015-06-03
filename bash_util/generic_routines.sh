@@ -195,3 +195,11 @@ function fetchGeneSynonyms {
         mysql -s -u anonymous -h $mySqlDbHost -P $mySqlDbPort -e "use ${latestReleaseDB}; SELECT DISTINCT gene.stable_id, external_synonym.synonym FROM gene, xref, external_synonym WHERE gene.display_xref_id = xref.xref_id AND external_synonym.xref_id = xref.xref_id ORDER BY gene.stable_id" | sort -k 1,1
     fi 
 }
+
+# Retrieve genome reference assembly id for $organism from gxa_references.conf 
+get_genome_assembly_id() {
+    organism=$1
+    atlasEnv=`atlas_env`
+    genomeReferenceAssemblyId=`grep "^${organism}" ${ATLAS_PROD}/sw/atlasinstall_${atlasEnv}/atlasprod/irap/gxa_references.conf | awk '{print $3}'`
+    echo $genomeReferenceAssemblyId
+}
