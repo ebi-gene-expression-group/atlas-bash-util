@@ -116,7 +116,7 @@ applyAllFixesForExperiment() {
    exp=$1
    echo "Applying fixes for $exp ..." 
     # Apply factor type fixes in idf file
-    applyFixes $exp automatic_fixes_properties.txt idf
+    applyFixes $exp automatic_fixes_properties.txt idf.txt
     if [ $? -ne 0 ]; then
 	echo "ERROR: Applying factor type fixes in idf file for $exp failed" >&2
 	return 1
