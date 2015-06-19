@@ -4,14 +4,13 @@ IFS="
 "
 # Send Report
 send_report() {
-    logOut=$1
+    log=$1
     email=$2
     subject=$3
     label=$4
     if [ -z "$label" ]; then
 	label="atlas3"
     fi
-    log=`echo $logOut | sed 's|.out||'`
     numOfNonEmptyLinesInReport=`egrep -v '^$' ${log}.report | wc -l`
     if [ $numOfNonEmptyLinesInReport -gt 0 ]; then 
 	mailx -s "[$label/cron] Process new experiments for $today: $subject" $email < ${log}.report
