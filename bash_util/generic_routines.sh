@@ -77,8 +77,8 @@ applyFixes() {
     # Apply factor type fixes in ${fileTypeToBeFixed} file
     for l in $(cat $ATLAS_PROD/sw/atlasinstall_${atlasEnv}/atlasprod/experiment_metadata/$fixesFile | sed 's|[[:space:]]*$||g');
     do
-	if [ ! -s "$exp/$exp.${fileTypeToBeFixed}.txt" ]; then
-	    echo "ERROR: $exp/$exp.${fileTypeToBeFixed}.txt not found or is empty" >&2
+	if [ ! -s "$exp/$exp.${fileTypeToBeFixed}" ]; then
+	    echo "ERROR: $exp/$exp.${fileTypeToBeFixed} not found or is empty" >&2
 	    return 1
 	fi 
 	echo $l | grep -P '\t' > /dev/null
@@ -87,12 +87,26 @@ applyFixes() {
 	fi
 	correct=`echo $l | awk -F"\t" '{print $1}'`
 	toBeReplaced=`echo $l | awk -F"\t" '{print $2}' | sed 's/[^-A-Za-z0-9_ ]/\\\&/g'`
-	perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}.txt
-	perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}.txt
+
 	if [ "$fixesFile" == "automatic_fixes_properties.txt" ]; then
-	    if [ "$fileTypeToBeFixed" == "sdrf" ]; then
-		#in sdrf fix factor types only
-		perl -pi -e "s|\[${toBeReplaced}\]|[${correct}]|g" $exp/$exp.${fileTypeToBeFixed}.txt
+	    # in sdrf or condensed-sdrv fix factor/characteristic types only
+	    if [ "$fileTypeToBeFixed" == "sdrf.txt" ]; then
+		perl -pi -e "s|\[${toBeReplaced}\]|[${correct}]|g" $exp/$exp.${fileTypeToBeFixed}
+	    elif [ "$fileTypeToBeFixed" == "condensed-sdrf.tsv" ]; then
+		# In condensed-sdrf, the factor/characteristic type is the penultimate column - so tabs on both sides
+		perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}
+	    else 
+		# idf
+		perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}
+		perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
+	    fi
+	elif [ "$fixesFile" == "automatic_fixes_values.txt" ]; then
+	    if [ "$fileTypeToBeFixed" == "sdrf.txt" ]; then
+		perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}
+		perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
+	    elif [ "$fileTypeToBeFixed" == "condensed-sdrf.tsv" ]; then
+		# In condensed-sdrf, the factor/characteristic value is the last column - so tab on the left and line ending on the right
+		perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
 	    fi
 	fi
     done
@@ -108,13 +122,25 @@ applyAllFixesForExperiment() {
 	return 1
     fi
     # Apply factor/sample characteristic type fixes to sdrf
-    applyFixes $exp automatic_fixes_properties.txt sdrf 
+    applyFixes $exp automatic_fixes_properties.txt sdrf.txt 
     if [ $? -ne 0 ]; then
 	echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
 	return 1
     fi
     # Apply sample characteristic/factor value fixes in sdrf file
-    applyFixes $exp automatic_fixes_values.txt sdrf
+    applyFixes $exp automatic_fixes_values.txt sdrf.txt
+    if [ $? -ne 0 ]; then
+	echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
+	return 1
+    fi
+    # Apply factor/sample characteristic type fixes to the condensed-sdrf file
+    applyFixes $exp automatic_fixes_properties.txt sdrf.txt 
+    if [ $? -ne 0 ]; then
+	echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
+	return 1
+    fi
+    # Apply sample characteristic/factor value fixes to the condensed-sdrf file
+    applyFixes $exp automatic_fixes_values.txt condensed-sdrf.tsv 
     if [ $? -ne 0 ]; then
 	echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
 	return 1
