@@ -111,7 +111,7 @@ applyAllFixesForExperiment() {
     #fi
 
     # Apply factor/sample characteristic type fixes to the condensed-sdrf file
-    applyFixes $exp automatic_fixes_properties.txt condensed-sdrf.txt 
+    applyFixes $exp automatic_fixes_properties.txt condensed-sdrf.tsv 
     if [ $? -ne 0 ]; then
 	echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
 	return 1
