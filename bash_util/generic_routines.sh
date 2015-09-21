@@ -64,9 +64,9 @@ applyFixes() {
 
 	if [ "$fixesFile" == "automatic_fixes_properties.txt" ]; then
 	    # in sdrf or condensed-sdrv fix factor/characteristic types only
-	    if [ "$fileTypeToBeFixed" == "sdrf.txt" ]; then
-		perl -pi -e "s|\[${toBeReplaced}\]|[${correct}]|g" $exp/$exp.${fileTypeToBeFixed}
-	    elif [ "$fileTypeToBeFixed" == "condensed-sdrf.tsv" ]; then
+	    #if [ "$fileTypeToBeFixed" == "sdrf.txt" ]; then
+		#perl -pi -e "s|\[${toBeReplaced}\]|[${correct}]|g" $exp/$exp.${fileTypeToBeFixed}
+	    if [ "$fileTypeToBeFixed" == "condensed-sdrf.tsv" ]; then
 		# In condensed-sdrf, the factor/characteristic type is the penultimate column - so tabs on both sides
 		perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}
 	    else 
@@ -75,10 +75,10 @@ applyFixes() {
 		perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
 	    fi
 	elif [ "$fixesFile" == "automatic_fixes_values.txt" ]; then
-	    if [ "$fileTypeToBeFixed" == "sdrf.txt" ]; then
-		perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}
-		perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
-	    elif [ "$fileTypeToBeFixed" == "condensed-sdrf.tsv" ]; then
+	    #if [ "$fileTypeToBeFixed" == "sdrf.txt" ]; then
+		#perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}
+		#perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
+	    if [ "$fileTypeToBeFixed" == "condensed-sdrf.tsv" ]; then
 		# In condensed-sdrf, the factor/characteristic value is the last column - so tab on the left and line ending on the right
 		perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
 	    fi
@@ -95,20 +95,23 @@ applyAllFixesForExperiment() {
 	echo "ERROR: Applying factor type fixes in idf file for $exp failed" >&2
 	return 1
     fi
+    
+    # Commenting out SDRF bit as should not be needed any more.
     # Apply factor/sample characteristic type fixes to sdrf
-    applyFixes $exp automatic_fixes_properties.txt sdrf.txt 
-    if [ $? -ne 0 ]; then
-	echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
-	return 1
-    fi
+    #applyFixes $exp automatic_fixes_properties.txt sdrf.txt 
+    #if [ $? -ne 0 ]; then
+	#echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
+	#return 1
+    #fi
     # Apply sample characteristic/factor value fixes in sdrf file
-    applyFixes $exp automatic_fixes_values.txt sdrf.txt
-    if [ $? -ne 0 ]; then
-	echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
-	return 1
-    fi
+    #applyFixes $exp automatic_fixes_values.txt sdrf.txt
+    #if [ $? -ne 0 ]; then
+	#echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
+	#return 1
+    #fi
+
     # Apply factor/sample characteristic type fixes to the condensed-sdrf file
-    applyFixes $exp automatic_fixes_properties.txt sdrf.txt 
+    applyFixes $exp automatic_fixes_properties.txt condensed-sdrf.txt 
     if [ $? -ne 0 ]; then
 	echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
 	return 1
