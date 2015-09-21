@@ -41,26 +41,6 @@ function capitalize_first_letter {
     echo -n $arg | sed 's/\(.\).*/\1/' | tr "[:lower:]" "[:upper:]" | tr -d "\n"; echo -n $arg | sed 's/.\(.*\)/\1/'
 }
 
-importMageTabFromAE2() {
-    expAcc=$1
-
-    middle=`echo $expAcc | awk -F"-" '{print $2}'`
-    cp /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.idf.txt ${expAcc}/${expAcc}.idf.txt
-    if [ ! -s $expAcc/$expAcc.idf.txt ]; then
-	echo "[ERROR] Failed to download: /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.idf.txt" >&2
-	return  1
-    fi
-
-    middle=`echo $expAcc | awk -F"-" '{print $2}'`
-    cp /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.sdrf.txt ${expAcc}/${expAcc}.sdrf.txt
-    if [ ! -s $expAcc/$expAcc.sdrf.txt ]; then
-	echo "[ERROR] Failed to download: /nfs/ma/home/arrayexpress/ae2_production/data/EXPERIMENT/${middle}/${expAcc}/${expAcc}.sdrf.txt" >&2
-        return 1
-    fi
-
-    return 0
-}
-
 # Applies fixes encoded in $fixesFile to $exp.$fileTypeToBeFixed.txt
 applyFixes() {
     exp=$1
