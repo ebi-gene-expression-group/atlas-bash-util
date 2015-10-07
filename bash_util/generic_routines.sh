@@ -205,3 +205,9 @@ get_genome_assembly_id() {
     genomeReferenceAssemblyId=`grep "^${organism}" ${ATLAS_PROD}/sw/atlasinstall_${atlasEnv}/atlasprod/irap/gxa_references.conf | awk '{print $3}'`
     echo $genomeReferenceAssemblyId
 }
+
+# Get mapping between Atlas experiments and Ensembl DBs that own their species
+get_experimentToEnsemblDB() {
+    dbConnection=$1
+    echo "select eo.experiment || chr(9) || oe.ensembldb from experiment_organism eo join bioentity_organism bo on eo.bioentity_organism = bo.name join organism_ensembldb oe on bo.organismid = oe.organismid;" | sqlplus -s $dbConnection | grep -P '^E-'
+}
