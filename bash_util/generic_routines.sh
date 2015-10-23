@@ -211,3 +211,11 @@ get_experimentToEnsemblDB() {
     dbConnection=$1
     echo "select eo.experiment || chr(9) || oe.ensembldb from experiment_organism eo join bioentity_organism bo on eo.bioentity_organism = bo.name join organism_ensembldb oe on bo.organismid = oe.organismid;" | sqlplus -s $dbConnection | grep -P '^E-'
 }
+
+
+# Get mapping between Atlas experiments and Ensembl DBs that own their species
+get_experiments_loaded_since_date() {
+    dbConnection=$1
+    sinceDate=$2
+    echo "select accession from experiment where last_update >= to_date('$sinceDate','DDMonYYYY') and private = 'F' order by accession;" | sqlplus -s $dbConnection | grep -P '^E-'
+}
