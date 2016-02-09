@@ -17,11 +17,6 @@ send_report() {
 	cat ${log}.report >> $log
     fi
 
-    # FIXME: copy logs to backup dir temporarily 
-    cp ${log}.out /ebi/microarray/home/mkeays/Atlas/jira/FGC/fgc-706/log_backups/${log}.out.$$
-    cp ${log}.err /ebi/microarray/home/mkeays/Atlas/jira/FGC/fgc-706/log_backups/${log}.err.$$
-    cp ${log}.report /ebi/microarray/home/mkeays/Atlas/jira/FGC/fgc-706/log_backups/${log}.report.$$
-
     rm -rf ${log}.out
     rm -rf ${log}.err
     rm -rf ${log}.report
