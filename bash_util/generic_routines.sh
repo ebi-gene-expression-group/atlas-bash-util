@@ -159,28 +159,64 @@ function fetchProperties {
     datasetName=$3
     ensemblProperty1=$4
     ensemblProperty2=$5
-    chromosomeName=$6
+    chromosomeList=$6
 
     if [[ -z "$url" || -z "$serverVirtualSchema" || -z "$datasetName" || -z "$ensemblProperty1" ]]; then
-	echo "ERROR: Usage: url serverVirtualSchema datasetName ensemblProperty1 (ensemblProperty2)" >&2
+	echo "ERROR: Usage: url serverVirtualSchema datasetName ensemblProperty1 [ensemblProperty2] [chromosomeList]" >&2
 	exit 1
     fi
 
-    if [ ! -z "$chromosomeName" ]; then
-	chromosomeFilter="<Filter name = \"chromosome_name\" value = \"${chromosomeName}\"/>"
-    else
-	chromosomeFilter=""
+    # Stem for the temporary files storing each chromosome.
+    tempFileStem=~/tmp/$datasetName.$ensemblProperty1
+
+    if [ ! -z "$ensemblProperty2" ]; then
+        tempFileStem=$tempFileStem.$ensemblProperty2
     fi
 
-    query="query=<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE Query><Query virtualSchemaName = \"${serverVirtualSchema}\" formatter = \"TSV\" header = \"1\" uniqueRows = \"1\" count = \"0\" ><Dataset name = \"${datasetName}\" interface = \"default\" >${chromosomeFilter}<Attribute name = \"${ensemblProperty1}\" />"
-    if [ ! -z "$ensemblProperty2" ]; then
-	query="$query<Attribute name = \"${ensemblProperty2}\" />"
+    # Remove old versions of temp files (if any).
+    rm -rf $tempFileStem.*.tsv
+
+    if [ ! -z "$chromosomeList" ]; then
+        
+        for chromosome in $( echo $chromosomeList | sed 's|,| |g' ); do
+
+            chromosomeFilter="<Filter name = \"chromosome_name\" value = \"${chromosome}\"/>"
+
+            query="query=<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE Query><Query virtualSchemaName = \"${serverVirtualSchema}\" formatter = \"TSV\" header = \"1\" uniqueRows = \"1\" count = \"0\" ><Dataset name = \"${datasetName}\" interface = \"default\" >${chromosomeFilter}<Attribute name = \"${ensemblProperty1}\" />"
+
+            if [ ! -z "$ensemblProperty2" ]; then
+                query="$query<Attribute name = \"${ensemblProperty2}\" />"
+            fi
+
+            tempFile=$tempFileStem.$chromosome.tsv
+
+            curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile
+        done
+        
+        # Now we've got all the temp files. Need to concatenate them.
+        allChromosomes=`cat $tempFileStem.*.tsv`
+
+        # Clean up.
+        rm $tempFileStem.*.tsv
+
+        echo "$allChromosomes"
+
+    else
+        chromosomeFilter=""
+        
+        # In some cases a line '^\t$ensemblProperty2' is being returned (with $ensemblProperty1 missing), e.g. in the following call:
+        #curl -s -G -X GET --data-urlencode 'query=<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE Query><Query virtualSchemaName = "metazoa_mart_19" formatter = "TSV" header = "1" uniqueRows = "1" count = "0" ><Dataset name = "agambiae_eg_gene" interface = "default" >${chromosomeFilter} <Attribute name = "ensembl_peptide_id" /><Attribute name = "description" /></Dataset></Query>' "http://metazoa.ensembl.org/biomart/martservice" | grep AGAP005154
+        # Until this is clarified, skip such lines with grep -vP '^\t'
+
+        query="query=<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE Query><Query virtualSchemaName = \"${serverVirtualSchema}\" formatter = \"TSV\" header = \"1\" uniqueRows = \"1\" count = \"0\" ><Dataset name = \"${datasetName}\" interface = \"default\" >${chromosomeFilter}<Attribute name = \"${ensemblProperty1}\" />"
+
+        if [ ! -z "$ensemblProperty2" ]; then
+            query="$query<Attribute name = \"${ensemblProperty2}\" />"
+        fi
+
+        curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t'
     fi
-    # In some cases a line '^\t$ensemblProperty2' is being returned (with $ensemblProperty1 missing), e.g. in the following call:
-    #curl -s -G -X GET --data-urlencode 'query=<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE Query><Query virtualSchemaName = "metazoa_mart_19" formatter = "TSV" header = "1" uniqueRows = "1" count = "0" ><Dataset name = "agambiae_eg_gene" interface = "default" >${chromosomeFilter} <Attribute name = "ensembl_peptide_id" /><Attribute name = "description" /></Dataset></Query>' "http://metazoa.ensembl.org/biomart/martservice" | grep AGAP005154
-    # Until this is clarified, skip such lines with grep -vP '^\t'
-    curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t'
-    # echo "curl -s -G -X GET --data-urlencode \"$query</Dataset></Query>\" \"$url\" | tail -n +2 | sort -k 1,1" > /dev/stderr
+
 }
 
 # Called in fetchAllEnsemblMapings.sh
