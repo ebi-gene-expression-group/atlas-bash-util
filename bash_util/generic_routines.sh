@@ -198,6 +198,12 @@ function fetchProperties {
 
         # Clean up.
         rm $tempFileStem.*.tsv
+        
+        # Check that the $allChromosomes variable is not empty.
+        if [ -z "$allChromosomes" ]; then
+            echo "ERROR: concatenation of all chromosomes is empty."
+            exit 1
+        fi
 
         echo "$allChromosomes"
 
