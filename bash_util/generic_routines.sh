@@ -190,7 +190,10 @@ function fetchProperties {
 
             tempFile=$tempFileStem.$chromosome.tsv
 
-            curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile
+            # FIXME
+            cmd="curl -s -G -X GET --data-urlencode \"$query</Dataset></Query>\" \"$url\" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile"
+            echo $cmd
+
         done
         
         # Now we've got all the temp files. Need to concatenate them.
@@ -214,7 +217,9 @@ function fetchProperties {
             query="$query<Attribute name = \"${ensemblProperty2}\" />"
         fi
 
-        curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t'
+        # FIXME
+        cmd="curl -s -G -X GET --data-urlencode \"$query</Dataset></Query>\" \"$url\" | tail -n +2 | sort -k 1,1 | grep -vP '^\t'"
+        echo $cmd
     fi
 
 }
