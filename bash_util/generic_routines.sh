@@ -178,7 +178,7 @@ function fetchProperties {
 
     if [ ! -z "$chromosomeList" ]; then
         
-        for chromosome in $( echo $chromosomeList | sed 's|,| |g' ); do
+        for chromosome in $( echo $chromosomeList | sed 's|,|\n|g' ); do
 
             chromosomeFilter="<Filter name = \"chromosome_name\" value = \"${chromosome}\"/>"
 
@@ -190,10 +190,7 @@ function fetchProperties {
 
             tempFile=$tempFileStem.$chromosome.tsv
 
-            # FIXME
-            cmd="curl -s -G -X GET --data-urlencode \"$query</Dataset></Query>\" \"$url\" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile"
-            echo $cmd
-
+            curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile
         done
         
         # Now we've got all the temp files. Need to concatenate them.
@@ -217,9 +214,7 @@ function fetchProperties {
             query="$query<Attribute name = \"${ensemblProperty2}\" />"
         fi
 
-        # FIXME
-        cmd="curl -s -G -X GET --data-urlencode \"$query</Dataset></Query>\" \"$url\" | tail -n +2 | sort -k 1,1 | grep -vP '^\t'"
-        echo $cmd
+        curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t'
     fi
 
 }
