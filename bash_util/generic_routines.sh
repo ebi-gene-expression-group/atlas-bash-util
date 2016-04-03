@@ -23,7 +23,7 @@ send_report() {
 }
 
 # Returns prod or test, depending on the Atlas environment in which the script calling it is running
-# It is assuming that all atlasinstall_<env>s are under /nfs/ma/home/atlas3-production/sw (it will fail otherwise)
+# It is assuming that all atlasinstall_<env>s are under ${ATLAS_PROD}/sw (it will fail otherwise)
 atlas_env() {
     scriptDir=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
     atlasInstallSubDir=$(echo $scriptDir | awk -F"/" '{print $7}')
