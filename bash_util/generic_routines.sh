@@ -26,7 +26,7 @@ send_report() {
 # It is assuming that all atlasinstall_<env>s are under ${ATLAS_PROD}/sw (it will fail otherwise)
 atlas_env() {
     scriptDir=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-    atlasInstallSubDir=$(echo $scriptDir | awk -F"/" '{print $7}')
+    atlasInstallSubDir=$(echo $scriptDir | awk -F"/" '{print $8}')
     echo $atlasInstallSubDir | awk -F"_" '{print $2}'
 }
 
