@@ -235,14 +235,6 @@ function fetchGeneSynonyms {
     fi 
 }
 
-# Retrieve genome reference assembly id for $organism from gxa_references.conf 
-get_genome_assembly_id() {
-    organism=$1
-    atlasEnv=`atlas_env`
-    genomeReferenceAssemblyId=`grep "^${organism}" ${ATLAS_PROD}/sw/atlasinstall_${atlasEnv}/atlasprod/irap/gxa_references.conf | awk '{print $3}'`
-    echo $genomeReferenceAssemblyId
-}
-
 # Get mapping between Atlas experiments and Ensembl DBs that own their species
 get_experimentToEnsemblDB() {
     dbConnection=$1
