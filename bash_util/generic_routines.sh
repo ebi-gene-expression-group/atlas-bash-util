@@ -13,8 +13,9 @@ send_report() {
     fi
     numOfNonEmptyLinesInReport=`egrep -v '^$' ${log}.report | wc -l`
     if [ $numOfNonEmptyLinesInReport -gt 0 ]; then 
-	mailx -s "[$label/cron] Process new experiments for $today: $subject" $email < ${log}.report
-	cat ${log}.report >> $log
+        today="`eval date +%Y-%m-%d`"
+        mailx -s "[$label/cron] Process new experiments for $today: $subject" $email < ${log}.report
+        cat ${log}.report >> $log
     fi
 
     rm -rf ${log}.out
@@ -160,7 +161,9 @@ function fetchProperties {
     ensemblProperty1=$4
     ensemblProperty2=$5
     chromosomeList=$6
-
+    wbpsFilterField=$7
+    wbpsFilterValue=$8
+    
     if [[ -z "$url" || -z "$serverVirtualSchema" || -z "$datasetName" || -z "$ensemblProperty1" ]]; then
 	echo "ERROR: Usage: url serverVirtualSchema datasetName ensemblProperty1 [ensemblProperty2] [chromosomeList]" >&2
 	exit 1
@@ -183,11 +186,20 @@ function fetchProperties {
             chromosomeFilter="<Filter name = \"chromosome_name\" value = \"${chromosome}\"/>"
 
             query="query=<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE Query><Query virtualSchemaName = \"${serverVirtualSchema}\" formatter = \"TSV\" header = \"1\" uniqueRows = \"1\" count = \"0\" ><Dataset name = \"${datasetName}\" interface = \"default\" >${chromosomeFilter}<Attribute name = \"${ensemblProperty1}\" />"
+            
+            if [ ! -z "$wbpsFilterField" ]; then
+
+                if [ -z "$wbpsFilterValue" ]; then
+                    echo "ERROR: No WBPS species name provided for filter."
+                fi
+
+                query="$query<Filter name = \"$wbpsFilterField\" value = \"$wbpsFilterValue\"/>"
+            fi
 
             if [ ! -z "$ensemblProperty2" ]; then
                 query="$query<Attribute name = \"${ensemblProperty2}\" />"
             fi
-
+            
             tempFile=$tempFileStem.$chromosome.tsv
 
             curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile
