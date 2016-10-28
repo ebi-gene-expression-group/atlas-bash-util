@@ -201,9 +201,6 @@ function fetchProperties {
 
             tempFile=$tempFileStem.$chromosome.tsv
             
-            echo $query
-            exit
-
             curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile
         done
         
