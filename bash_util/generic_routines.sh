@@ -201,7 +201,7 @@ function fetchProperties {
             fi
             
             tempFile=$tempFileStem.$chromosome.tsv
-
+            
             curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile
         done
         
@@ -238,12 +238,23 @@ function fetchGeneSynonyms {
     mySqlDbPort=$3
     mySqlDbName=$4
     softwareVersion=$5
-    latestReleaseDB=`mysql -s -u anonymous -h "$mySqlDbHost" -P "$mySqlDbPort" -e "SHOW DATABASES LIKE '${mySqlDbName}_core_${softwareVersion}%'" | grep "^${mySqlDbName}_core_${softwareVersion}"`
+    annotator=$6    # This is either ensembl or wbps
+
+    if [[ $annotator =~ ensembl ]]; then    
+        dbUser=anonymous
+    elif [[ $annotator =~ wbps ]]; then
+        dbUser=ensro
+    else
+        echo "ERROR: for $annSrc: unknown annotator: $annotator" >&2
+        exit 1
+    fi
+
+    latestReleaseDB=`mysql -s -u $dbUser -h "$mySqlDbHost" -P "$mySqlDbPort" -e "SHOW DATABASES LIKE '${mySqlDbName}_core_${softwareVersion}%'" | grep "^${mySqlDbName}_core_${softwareVersion}"`
     if [ -z "$latestReleaseDB" ]; then
-	echo "ERROR: for $annSrc: Failed to retrieve then database name for release number: $softwareVersion" >&2
-	exit 1
+        echo "ERROR: for $annSrc: Failed to retrieve the database name for release number: $softwareVersion" >&2
+        exit 1
     else 
-        mysql -s -u anonymous -h $mySqlDbHost -P $mySqlDbPort -e "use ${latestReleaseDB}; SELECT DISTINCT gene.stable_id, external_synonym.synonym FROM gene, xref, external_synonym WHERE gene.display_xref_id = xref.xref_id AND external_synonym.xref_id = xref.xref_id ORDER BY gene.stable_id" | sort -k 1,1
+        mysql -s -u $dbUser -h $mySqlDbHost -P $mySqlDbPort -e "use ${latestReleaseDB}; SELECT DISTINCT gene.stable_id, external_synonym.synonym FROM gene, xref, external_synonym WHERE gene.display_xref_id = xref.xref_id AND external_synonym.xref_id = xref.xref_id ORDER BY gene.stable_id" | sort -k 1,1
     fi 
 }
 
