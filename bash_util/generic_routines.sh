@@ -160,6 +160,8 @@ function fetchProperties {
     ensemblProperty1=$4
     ensemblProperty2=$5
     chromosomeList=$6
+    speciesFilterField=$7
+    speciesFilterValue=$8
 
     if [[ -z "$url" || -z "$serverVirtualSchema" || -z "$datasetName" || -z "$ensemblProperty1" ]]; then
 	echo "ERROR: Usage: url serverVirtualSchema datasetName ensemblProperty1 [ensemblProperty2] [chromosomeList]" >&2
@@ -187,8 +189,20 @@ function fetchProperties {
             if [ ! -z "$ensemblProperty2" ]; then
                 query="$query<Attribute name = \"${ensemblProperty2}\" />"
             fi
+            
+            if [ ! -z "$speciesFilterField" ]; then
+                if [ -z "$speciesFilterValue" ]; then
+                    echo "ERROR: speciesFilterField provided but no speciesFilterValue."
+                    exit 1
+                fi
+
+                query="$query<Filter name = \"$speciesFilterField\" value = \"$speciesFilterValue\" />"
+            fi
 
             tempFile=$tempFileStem.$chromosome.tsv
+            
+            echo $query
+            exit
 
             curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile
         done
