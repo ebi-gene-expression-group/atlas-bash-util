@@ -271,3 +271,46 @@ get_experiments_loaded_since_date() {
     sinceDate=$2
     echo "select accession from experiment where last_update >= to_date('$sinceDate','DDMonYYYY') and private = 'F' order by accession;" | sqlplus -s $dbConnection | grep -P '^E-'
 }
+
+email_log_error() {
+    errorMsg=$1
+    log=$2
+    email=$3
+    echo $errorMsg >> $log
+    mailx -s $errorMsg $email < $log
+}
+
+# Check if $JOB_TYPE for $EXP_IRAP_DIR is currently in progress
+# If $JOB_TYPE is not specified, check if any stage for $EXP_IRAP_DIR is currently in progress
+get_inprogress() {
+   dbConnection=$1
+   JOB_TYPE=$2
+   EXP_IRAP_DIR=$3
+   jobTypeClause=
+   if [ "$JOB_TYPE" != "any" ]; then
+       jobTypeClause="jobtype='$JOB_TYPE' and"
+   fi
+   echo `echo "select count(*) from ATLAS_JOBS where $jobTypeClause jobobject='${EXP_IRAP_DIR}';" | sqlplus -s $dbConnection | grep -P '^\t' | awk -F"\t" '{print $NF}' | sed 's/ //g'`
+}
+
+# Set 'in-progress' flag in the DB - so that crontab-ed experiment loading calls don't ever conflict with each other
+set_inprogress() {
+   dbConnection=$1
+   JOB_TYPE=$2
+   EXP_IRAP_DIR=$3
+   inProgress=`get_inprogress $dbConnection $JOB_TYPE $EXP_IRAP_DIR`
+   if [ $inProgress -ne 0 ]; then
+       return 1
+   else
+       # First delete any previous entries from $EXP_IRAP_DIR - only one job in progress per ${EXP_IRAP_DIR} is allowed
+       echo "delete from ATLAS_JOBS where jobobject='${EXP_IRAP_DIR}';" | sqlplus -s $dbConnection
+       echo "insert into ATLAS_JOBS values (sysdate,'$JOB_TYPE','${EXP_IRAP_DIR}');" | sqlplus -s $dbConnection
+   fi
+}
+
+# Remove 'process is active' flag for $processName
+remove_inprogress() {
+   dbConnection=$1
+   JOB_TYPE=$2
+   echo "delete from ATLAS_JOBS where jobtype='$JOB_TYPE';" | sqlplus -s $dbConnection
+}
