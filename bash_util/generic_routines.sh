@@ -12,7 +12,7 @@ send_report() {
 	label="atlas3"
     fi
     numOfNonEmptyLinesInReport=`egrep -v '^$' ${log}.report | wc -l`
-    if [ $numOfNonEmptyLinesInReport -gt 0 ]; then 
+    if [ $numOfNonEmptyLinesInReport -gt 0 ]; then
         today="`eval date +%Y-%m-%d`"
         mailx -s "[$label/cron] Process new experiments for $today: $subject" $email < ${log}.report
         cat ${log}.report >> $log
@@ -56,10 +56,10 @@ applyFixes() {
 	if [ ! -s "$exp/$exp.${fileTypeToBeFixed}" ]; then
 	    echo "ERROR: $exp/$exp.${fileTypeToBeFixed} not found or is empty" >&2
 	    return 1
-	fi 
+	fi
 	echo $l | grep -P '\t' > /dev/null
 	if [ $? -ne 0 ]; then
-	    echo  "WARNING: line: '$l' in automatic_fixes_properties.txt is missing a tab character - not applying the fix " 
+	    echo  "WARNING: line: '$l' in automatic_fixes_properties.txt is missing a tab character - not applying the fix "
 	fi
 	correct=`echo $l | awk -F"\t" '{print $1}'`
 	toBeReplaced=`echo $l | awk -F"\t" '{print $2}' | sed 's/[^-A-Za-z0-9_ ]/\\\&/g'`
@@ -71,7 +71,7 @@ applyFixes() {
 	    if [ "$fileTypeToBeFixed" == "condensed-sdrf.tsv" ]; then
 		# In condensed-sdrf, the factor/characteristic type is the penultimate column - so tabs on both sides
 		perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}
-	    else 
+	    else
 		# idf
 		perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}
 		perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
@@ -90,17 +90,17 @@ applyFixes() {
 
 applyAllFixesForExperiment() {
    exp=$1
-   echo "Applying fixes for $exp ..." 
+   echo "Applying fixes for $exp ..."
     # Apply factor type fixes in idf file
     applyFixes $exp automatic_fixes_properties.txt idf.txt
     if [ $? -ne 0 ]; then
 	echo "ERROR: Applying factor type fixes in idf file for $exp failed" >&2
 	return 1
     fi
-    
+
     # Commenting out SDRF bit as should not be needed any more.
     # Apply factor/sample characteristic type fixes to sdrf
-    #applyFixes $exp automatic_fixes_properties.txt sdrf.txt 
+    #applyFixes $exp automatic_fixes_properties.txt sdrf.txt
     #if [ $? -ne 0 ]; then
 	#echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
 	#return 1
@@ -113,13 +113,13 @@ applyAllFixesForExperiment() {
     #fi
 
     # Apply factor/sample characteristic type fixes to the condensed-sdrf file
-    applyFixes $exp automatic_fixes_properties.txt condensed-sdrf.tsv 
+    applyFixes $exp automatic_fixes_properties.txt condensed-sdrf.tsv
     if [ $? -ne 0 ]; then
 	echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
 	return 1
     fi
     # Apply sample characteristic/factor value fixes to the condensed-sdrf file
-    applyFixes $exp automatic_fixes_values.txt condensed-sdrf.tsv 
+    applyFixes $exp automatic_fixes_values.txt condensed-sdrf.tsv
     if [ $? -ne 0 ]; then
 	echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
 	return 1
@@ -163,7 +163,7 @@ function fetchProperties {
     chromosomeList=$6
     wbpsFilterField=$7
     wbpsFilterValue=$8
-    
+
     if [[ -z "$url" || -z "$serverVirtualSchema" || -z "$datasetName" || -z "$ensemblProperty1" ]]; then
 	echo "ERROR: Usage: url serverVirtualSchema datasetName ensemblProperty1 [ensemblProperty2] [chromosomeList]" >&2
 	exit 1
@@ -180,13 +180,13 @@ function fetchProperties {
     rm -rf $tempFileStem.*.tsv
 
     if [ ! -z "$chromosomeList" ]; then
-        
+
         for chromosome in $( echo $chromosomeList | sed 's|,|\n|g' ); do
 
             chromosomeFilter="<Filter name = \"chromosome_name\" value = \"${chromosome}\"/>"
 
             query="query=<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE Query><Query virtualSchemaName = \"${serverVirtualSchema}\" formatter = \"TSV\" header = \"1\" uniqueRows = \"1\" count = \"0\" ><Dataset name = \"${datasetName}\" interface = \"default\" >${chromosomeFilter}<Attribute name = \"${ensemblProperty1}\" />"
-            
+
             if [ ! -z "$wbpsFilterField" ]; then
 
                 if [ -z "$wbpsFilterValue" ]; then
@@ -199,23 +199,23 @@ function fetchProperties {
             if [ ! -z "$ensemblProperty2" ]; then
                 query="$query<Attribute name = \"${ensemblProperty2}\" />"
             fi
-            
+
             tempFile=$tempFileStem.$chromosome.tsv
-            
+
             curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile
         done
-        
+
         # Now we've got all the temp files. Need to concatenate them.
         allChromosomes=`cat $tempFileStem.*.tsv`
 
         # Clean up.
         rm $tempFileStem.*.tsv
-        
+
         echo "$allChromosomes"
 
     else
         chromosomeFilter=""
-        
+
         # In some cases a line '^\t$ensemblProperty2' is being returned (with $ensemblProperty1 missing), e.g. in the following call:
         #curl -s -G -X GET --data-urlencode 'query=<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE Query><Query virtualSchemaName = "metazoa_mart_19" formatter = "TSV" header = "1" uniqueRows = "1" count = "0" ><Dataset name = "agambiae_eg_gene" interface = "default" >${chromosomeFilter} <Attribute name = "ensembl_peptide_id" /><Attribute name = "description" /></Dataset></Query>' "http://metazoa.ensembl.org/biomart/martservice" | grep AGAP005154
         # Until this is clarified, skip such lines with grep -vP '^\t'
@@ -240,7 +240,7 @@ function fetchGeneSynonyms {
     softwareVersion=$5
     annotator=$6    # This is either ensembl or wbps
 
-    if [[ $annotator =~ ensembl ]]; then    
+    if [[ $annotator =~ ensembl ]]; then
         dbUser=anonymous
     elif [[ $annotator =~ wbps ]]; then
         dbUser=ensro
@@ -253,9 +253,9 @@ function fetchGeneSynonyms {
     if [ -z "$latestReleaseDB" ]; then
         echo "ERROR: for $annSrc: Failed to retrieve the database name for release number: $softwareVersion" >&2
         exit 1
-    else 
+    else
         mysql -s -u $dbUser -h $mySqlDbHost -P $mySqlDbPort -e "use ${latestReleaseDB}; SELECT DISTINCT gene.stable_id, external_synonym.synonym FROM gene, xref, external_synonym WHERE gene.display_xref_id = xref.xref_id AND external_synonym.xref_id = xref.xref_id ORDER BY gene.stable_id" | sort -k 1,1
-    fi 
+    fi
 }
 
 # Get mapping between Atlas experiments and Ensembl DBs that own their species
@@ -313,4 +313,13 @@ remove_inprogress() {
    dbConnection=$1
    JOB_TYPE=$2
    echo "delete from ATLAS_JOBS where jobtype='$JOB_TYPE';" | sqlplus -s $dbConnection
+}
+
+find_properties_file() {
+  organism=$1
+  property=$2
+  cat \
+    <(find -L ${ATLAS_PROD}/bioentity_properties/wbps -name ${1}.wbpsgene.${2}.tsv) \
+    <(find -L ${ATLAS_PROD}/bioentity_properties/ensembl -name ${1}.ensgene.${2}.tsv) \
+    | head -n1
 }
