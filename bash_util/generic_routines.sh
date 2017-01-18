@@ -321,5 +321,5 @@ find_properties_file() {
   cat \
     <(find -L ${ATLAS_PROD}/bioentity_properties/wbps -name ${1}.wbpsgene.${2}.tsv) \
     <(find -L ${ATLAS_PROD}/bioentity_properties/ensembl -name ${1}.ensgene.${2}.tsv) \
-    | xargs -n1 realpath | head -n1
+    | head -n1
 }
