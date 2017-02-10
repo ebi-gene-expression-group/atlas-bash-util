@@ -309,10 +309,25 @@ remove_inprogress() {
 }
 
 find_properties_file() {
-  organism=$1
-  property=$2
-  cat \
-    < $(find -L ${ATLAS_PROD}/bioentity_properties/wbps -name ${organism}.wbpsgene.${property}.tsv) \
-    < $(find -L ${ATLAS_PROD}/bioentity_properties/ensembl -name ${organism}.ensgene.${property}.tsv) \
-    | head -n1
+    organism=$1
+    property=$2
+#--------------------------------------------------
+# Doesn't work -- gives syntax error on LSF.
+#   cat \
+#     < (find -L ${ATLAS_PROD}/bioentity_properties/wbps -name ${organism}.wbpsgene.${property}.tsv) \
+#     < (find -L ${ATLAS_PROD}/bioentity_properties/ensembl -name ${organism}.ensgene.${property}.tsv) \
+#     | head -n1
+#-------------------------------------------------- 
+
+    ensFile=`ls ${ATLAS_PROD}/bioentity_properties/ensembl | grep ${organism}.ensgene.${property}.tsv`
+    if [ ! -z "$ensFile" ]; then
+        echo ${ATLAS_PROD}/bioentity_properties/ensembl/$ensFile
+    else
+        wbpsFile=`ls ${ATLAS_PROD}/bioentity_properties/wbps | grep ${organism}.wbpsgene.${property}.tsv`
+        if [ ! -z "$wbpsFile" ]; then
+            echo ${ATLAS_PROD}/bioentity_properties/wbps/$wbpsFile
+        else
+            >&2 echo "No annotation file found for organism $organism and property $property"
+        fi
+    fi
 }
