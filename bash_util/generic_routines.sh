@@ -313,6 +313,10 @@ find_properties_file() {
     property=$2
 #--------------------------------------------------
 # Doesn't work -- gives syntax error on LSF.
+# Salvatore from Systems suggested to add a "$" at the start of the commands
+# (e.g. < $(find ...) but this then produced "ambiguous redirect" messages so
+# giving up on this.
+#
 #   cat \
 #     < (find -L ${ATLAS_PROD}/bioentity_properties/wbps -name ${organism}.wbpsgene.${property}.tsv) \
 #     < (find -L ${ATLAS_PROD}/bioentity_properties/ensembl -name ${organism}.ensgene.${property}.tsv) \
