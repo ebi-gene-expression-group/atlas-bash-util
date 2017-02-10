@@ -332,6 +332,7 @@ find_properties_file() {
             echo ${ATLAS_PROD}/bioentity_properties/wbps/$wbpsFile
         else
             >&2 echo "No annotation file found for organism $organism and property $property"
+            exit 1
         fi
     fi
 }
