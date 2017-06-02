@@ -261,9 +261,9 @@ function fetchGeneSynonyms {
 
 # Get mapping between Atlas experiments and Ensembl DBs that own their species
 get_experiments_loaded_since_date() {
-    postgressDBConnection=$1
+    dbConnection=$1
     sinceDate=$2
-    echo "select accession from experiment where last_update >= to_date('$sinceDate','DDMonYYYY') and private = 'F' order by accession;" | psql $postgressDBConnection | tail -n +3 | head -n -2 | sed 's/ //g'
+    echo "select accession from experiment where last_update >= to_date('$sinceDate','DDMonYYYY') and private = 'F' order by accession;" | psql $dbConnection | tail -n +3 | head -n -2 | sed 's/ //g'
 }
 
 email_log_error() {
@@ -277,36 +277,36 @@ email_log_error() {
 # Check if $JOB_TYPE for $EXP_IRAP_DIR is currently in progress
 # If $JOB_TYPE is not specified, check if any stage for $EXP_IRAP_DIR is currently in progress
 get_inprogress() {
-   postgressDBConnection=$1
+   dbConnection=$1
    JOB_TYPE=$2
    EXP_IRAP_DIR=$3
    jobTypeClause=
    if [ "$JOB_TYPE" != "any" ]; then
        jobTypeClause="jobtype='$JOB_TYPE' and"
    fi
-   echo `echo "select count(*) from ATLAS_JOBS where $jobTypeClause jobobject='${EXP_IRAP_DIR}';" |  psql $postgressDBConnection | tail -n +3 | head -n1 | sed 's/ //g'`
+   echo `echo "select count(*) from ATLAS_JOBS where $jobTypeClause jobobject='${EXP_IRAP_DIR}';" |  psql $dbConnection | tail -n +3 | head -n1 | sed 's/ //g'`
 }
 
 # Set 'in-progress' flag in the DB - so that crontab-ed experiment loading calls don't ever conflict with each other
 set_inprogress() {
-   postgressDBConnection=$1
+   dbConnection=$1
    JOB_TYPE=$2
    EXP_IRAP_DIR=$3
-   inProgress=`get_inprogress $postgressDBConnection $JOB_TYPE $EXP_IRAP_DIR`
+   inProgress=`get_inprogress $dbConnection $JOB_TYPE $EXP_IRAP_DIR`
    if [ $inProgress -ne 0 ]; then
        return 1
    else
        # First delete any previous entries from $EXP_IRAP_DIR - only one job in progress per ${EXP_IRAP_DIR} is allowed
-       echo "delete from ATLAS_JOBS where jobobject='${EXP_IRAP_DIR}';" | psql $postgressDBConnection 
-       echo "insert into ATLAS_JOBS values (current_timestamp(0),'$JOB_TYPE','${EXP_IRAP_DIR}');" | psql $postgressDBConnection
+       echo "delete from ATLAS_JOBS where jobobject='${EXP_IRAP_DIR}';" | psql $dbConnection 
+       echo "insert into ATLAS_JOBS values (current_timestamp(0),'$JOB_TYPE','${EXP_IRAP_DIR}');" | psql $dbConnection
    fi
 }
 
 # Remove 'process is active' flag for $processName
 remove_inprogress() {
-   $postgressDBConnection=$1
+   $dbConnection=$1
    JOB_TYPE=$2
-   echo "delete from ATLAS_JOBS where jobtype='$JOB_TYPE';" | psql $postgressDBConnection
+   echo "delete from ATLAS_JOBS where jobtype='$JOB_TYPE';" | psql $dbConnection
 }
 
 find_properties_file() {
