@@ -304,7 +304,7 @@ set_inprogress() {
 
 # Remove 'process is active' flag for $processName
 remove_inprogress() {
-   $dbConnection=$1
+   dbConnection=$1
    JOB_TYPE=$2
    echo "delete from ATLAS_JOBS where jobtype='$JOB_TYPE';" | psql $dbConnection
 }
