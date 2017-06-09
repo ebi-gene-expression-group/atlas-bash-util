@@ -152,113 +152,6 @@ get_pass() {
     fi
 }
 
-
-# Fetch properties for ensemblProperty1 and (optionally) ensemblProperty2 from the Ensembl biomart identified by url, serverVirtualSchema and datasetName)
-# Called in fetchAllEnsemblMapings.sh
-function fetchProperties {
-    url=$1
-    serverVirtualSchema=$2
-    datasetName=$3
-    ensemblProperty1=$4
-    ensemblProperty2=$5
-    chromosomeList=$6
-    wbpsFilterField=$7
-    wbpsFilterValue=$8
-
-    if [[ -z "$url" || -z "$serverVirtualSchema" || -z "$datasetName" || -z "$ensemblProperty1" ]]; then
-	echo "ERROR: Usage: url serverVirtualSchema datasetName ensemblProperty1 [ensemblProperty2] [chromosomeList]" >&2
-	exit 1
-    fi
-
-    # Stem for the temporary files storing each chromosome.
-    tempFileStem=~/tmp/$datasetName.$ensemblProperty1
-
-    if [ ! -z "$ensemblProperty2" ]; then
-        tempFileStem=$tempFileStem.$ensemblProperty2
-    fi
-
-    # Remove old versions of temp files (if any).
-    rm -rf $tempFileStem.*.tsv
-
-    if [ ! -z "$chromosomeList" ]; then
-
-        for chromosome in $( echo $chromosomeList | sed 's|,|\n|g' ); do
-
-            chromosomeFilter="<Filter name = \"chromosome_name\" value = \"${chromosome}\"/>"
-
-            query="query=<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE Query><Query virtualSchemaName = \"${serverVirtualSchema}\" formatter = \"TSV\" header = \"1\" uniqueRows = \"1\" count = \"0\" ><Dataset name = \"${datasetName}\" interface = \"default\" >${chromosomeFilter}<Attribute name = \"${ensemblProperty1}\" />"
-
-            if [ ! -z "$wbpsFilterField" ]; then
-
-                if [ -z "$wbpsFilterValue" ]; then
-                    echo "ERROR: No WBPS species name provided for filter."
-                fi
-
-                query="$query<Filter name = \"$wbpsFilterField\" value = \"$wbpsFilterValue\"/>"
-            fi
-
-            if [ ! -z "$ensemblProperty2" ]; then
-                query="$query<Attribute name = \"${ensemblProperty2}\" />"
-            fi
-
-            tempFile=$tempFileStem.$chromosome.tsv
-
-            curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t' > $tempFile
-        done
-
-        # Now we've got all the temp files. Need to concatenate them.
-        allChromosomes=`cat $tempFileStem.*.tsv`
-
-        # Clean up.
-        rm $tempFileStem.*.tsv
-
-        echo "$allChromosomes"
-
-    else
-        chromosomeFilter=""
-
-        # In some cases a line '^\t$ensemblProperty2' is being returned (with $ensemblProperty1 missing), e.g. in the following call:
-        #curl -s -G -X GET --data-urlencode 'query=<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE Query><Query virtualSchemaName = "metazoa_mart_19" formatter = "TSV" header = "1" uniqueRows = "1" count = "0" ><Dataset name = "agambiae_eg_gene" interface = "default" >${chromosomeFilter} <Attribute name = "ensembl_peptide_id" /><Attribute name = "description" /></Dataset></Query>' "http://metazoa.ensembl.org/biomart/martservice" | grep AGAP005154
-        # Until this is clarified, skip such lines with grep -vP '^\t'
-
-        query="query=<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE Query><Query virtualSchemaName = \"${serverVirtualSchema}\" formatter = \"TSV\" header = \"1\" uniqueRows = \"1\" count = \"0\" ><Dataset name = \"${datasetName}\" interface = \"default\" >${chromosomeFilter}<Attribute name = \"${ensemblProperty1}\" />"
-
-        if [ ! -z "$ensemblProperty2" ]; then
-            query="$query<Attribute name = \"${ensemblProperty2}\" />"
-        fi
-
-        curl -s -G -X GET --data-urlencode "$query</Dataset></Query>" "$url" | tail -n +2 | sort -k 1,1 | grep -vP '^\t'
-    fi
-
-}
-
-# Called in fetchAllEnsemblMapings.sh
-function fetchGeneSynonyms {
-    annSrc=$1
-    mySqlDbHost=$2
-    mySqlDbPort=$3
-    mySqlDbName=$4
-    softwareVersion=$5
-    annotator=$6    # This is either ensembl or wbps
-
-    if [[ $annotator =~ ensembl ]]; then
-        dbUser=anonymous
-    elif [[ $annotator =~ wbps ]]; then
-        dbUser=ensro
-    else
-        echo "ERROR: for $annSrc: unknown annotator: $annotator" >&2
-        exit 1
-    fi
-
-    latestReleaseDB=`mysql -s -u $dbUser -h "$mySqlDbHost" -P "$mySqlDbPort" -e "SHOW DATABASES LIKE '${mySqlDbName}_core_${softwareVersion}%'" | grep "^${mySqlDbName}_core_${softwareVersion}"`
-    if [ -z "$latestReleaseDB" ]; then
-        echo "ERROR: for $annSrc: Failed to retrieve the database name for release number: $softwareVersion" >&2
-        exit 1
-    else
-        mysql -s -u $dbUser -h $mySqlDbHost -P $mySqlDbPort -e "use ${latestReleaseDB}; SELECT DISTINCT gene.stable_id, external_synonym.synonym FROM gene, xref, external_synonym WHERE gene.display_xref_id = xref.xref_id AND external_synonym.xref_id = xref.xref_id ORDER BY gene.stable_id" | sort -k 1,1
-    fi
-}
-
 # Get mapping between Atlas experiments and Ensembl DBs that own their species
 get_experiments_loaded_since_date() {
     dbConnection=$1
@@ -297,7 +190,7 @@ set_inprogress() {
        return 1
    else
        # First delete any previous entries from $EXP_IRAP_DIR - only one job in progress per ${EXP_IRAP_DIR} is allowed
-       echo "delete from ATLAS_JOBS where jobobject='${EXP_IRAP_DIR}';" | psql $dbConnection 
+       echo "delete from ATLAS_JOBS where jobobject='${EXP_IRAP_DIR}';" | psql $dbConnection
        echo "insert into ATLAS_JOBS values (current_timestamp(0),'$JOB_TYPE','${EXP_IRAP_DIR}');" | psql $dbConnection
    fi
 }
@@ -322,7 +215,7 @@ find_properties_file() {
 #     < (find -L ${ATLAS_PROD}/bioentity_properties/wbps -name ${organism}.wbpsgene.${property}.tsv) \
 #     < (find -L ${ATLAS_PROD}/bioentity_properties/ensembl -name ${organism}.ensgene.${property}.tsv) \
 #     | head -n1
-#-------------------------------------------------- 
+#--------------------------------------------------
 
     ensFile=`ls ${ATLAS_PROD}/bioentity_properties/ensembl | grep ${organism}.ensgene.${property}.tsv`
     if [ ! -z "$ensFile" ]; then
