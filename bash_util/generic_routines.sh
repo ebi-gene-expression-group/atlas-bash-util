@@ -217,13 +217,13 @@ find_properties_file() {
 #     | head -n1
 #--------------------------------------------------
 
-    ensFile=`ls ${ATLAS_PROD}/bioentity_properties/ensembl | grep ${organism}.ensgene.${property}.tsv`
+    ensFile="${ATLAS_PROD}/bioentity_properties/ensembl/${organism}.ensgene.${property}.tsv"
     if [ ! -z "$ensFile" ]; then
-        echo ${ATLAS_PROD}/bioentity_properties/ensembl/$ensFile
+        echo $ensFile
     else
-        wbpsFile=`ls ${ATLAS_PROD}/bioentity_properties/wbps | grep ${organism}.wbpsgene.${property}.tsv`
+        wbpsFile="${ATLAS_PROD}/bioentity_properties/wbps/${organism}.wbpsgene.${property}.tsv"
         if [ ! -z "$wbpsFile" ]; then
-            echo ${ATLAS_PROD}/bioentity_properties/wbps/$wbpsFile
+            echo $wbpsFile
         else
             >&2 echo "No annotation file found for organism $organism and property $property"
             exit 1
