@@ -230,3 +230,11 @@ find_properties_file() {
         fi
     fi
 }
+
+get_arraydesign_file() {
+    find -L ${ATLAS_PROD}/bioentity_properties/array_designs -type f -name "*.${1}.tsv" | head -n1
+}
+
+get_organism_given_arraydesign_file(){
+    basename $1 | awk -F"." '{print $1}'
+}
