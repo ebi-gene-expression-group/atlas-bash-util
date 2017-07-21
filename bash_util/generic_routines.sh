@@ -238,3 +238,7 @@ get_arraydesign_file() {
 get_organism_given_arraydesign_file(){
     basename $1 | awk -F"." '{print $1}'
 }
+
+get_analysis_path_for_experiment_accession(){
+	[ "$1" ] && find $ATLAS_PROD/analysis -maxdepth 4 -type d -name "$1" -print -quit
+}
