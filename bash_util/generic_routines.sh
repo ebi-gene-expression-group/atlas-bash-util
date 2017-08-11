@@ -242,3 +242,36 @@ get_organism_given_arraydesign_file(){
 get_analysis_path_for_experiment_accession(){
 	[ "$1" ] && find $ATLAS_PROD/analysis -maxdepth 4 -type d -name "$1" -print -quit
 }
+
+get_db_connection(){
+    user="***REMOVED***"
+    dbIdentifier="pro"
+    local OPTARG OPTIND opt
+    while getopts ":u:d:" opt; do
+    	case $opt in
+    		u)
+          		user=$OPTARG;
+          		;;
+    		d)
+    			dbIdentifier=$OPTARG;
+    			;;
+    		?)
+    			 >&2 echo "Unknown option: $OPTARG"
+                 return 1
+    			;;
+    	esac
+    done
+    pgPassFile=$ATLAS_PROD/sw/${user}_gxpatlas${dbIdentifier}
+    if [ ! -s "$pgPassFile" ]; then
+        >&2 echo "ERROR: Cannot find password for $user and $dbIdentifier"
+        return 1
+    fi
+    pgAtlasDB=gxpatlas${dbIdentifier}
+    pgAtlasHostPort=`cat $pgPassFile | awk -F":" '{print $1":"$2}'`
+    pgAtlasUserPass=`cat $pgPassFile | awk -F":" '{print $5}'`
+    if [ $? -ne 0 ]; then
+        >&2 echo "ERROR: Failed to retrieve db pass"
+        return 1
+    fi
+    echo "postgresql://${user}:${pgAtlasUserPass}@${pgAtlasHostPort}/${pgAtlasDB}"
+}
