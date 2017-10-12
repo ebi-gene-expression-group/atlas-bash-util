@@ -1,4 +1,8 @@
 #!/bin/bash
+# Gets the organism for an experiment
+# Usage: get_organism.sh <path to exp>
+# If condensed-sdrf.tsv in $ATLAS_EXPS is present, use that, otherwise revisit ArrayExpress/Magetab
+# For microarray experiments an array for different species will rarely be used so we get organism from array design file name
 
 set -euo pipefail
 scriptDir=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
@@ -6,7 +10,7 @@ projectRoot=${scriptDir}/..
 
 # Take the first two parts of the name, put an underscore in between
 # We use lowercase throughout atlasprod, Ensembl website capitalizes them like words
-# Exception: canis lupus familiaris is the domesticated dog, Canis_familiaris in Ensembl (because canis lupus is a wild wolf)
+# Exception: canis lupus familiaris is domesticated dog, Canis_familiaris in Ensembl (because Canis_lupus would be wolf)
 to_ensembl_species_lowercase(){
 	cat - | tr '[:upper:]' '[:lower:]' | awk '{print $1"_"$2}' | sed 's/canis_lupus/canis_familiaris/'
 }
