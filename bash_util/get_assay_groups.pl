@@ -2,12 +2,12 @@
 #
 # In: path to a configuration file e.g. $ATLAS_EXPS/E-MTAB-513/E-MTAB-513-configuration.xml
 # Out: <assay group><tab><assay>
-
-my ($path) = @_;
+use Atlas::AtlasConfig::Reader qw(parseAtlasConfig) ;
+my ($path) = @ARGV;
 
 die "Usage: $0 <path to configuration.xml>" unless $path;
 
-my $experimentConfig = Atlas::AtlasConfig::Reader::parseAtlasConfig($path);
+my $experiment_config = parseAtlasConfig($path);
 
 for my $analytics ( @{ $experiment_config->get_atlas_analytics } ) {
 	for my $assay_group ( @{ $analytics->get_atlas_assay_groups } ) {
