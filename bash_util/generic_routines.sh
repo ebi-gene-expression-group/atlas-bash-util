@@ -43,6 +43,50 @@ function capitalize_first_letter {
     echo -n $arg | sed 's/\(.\).*/\1/' | tr "[:lower:]" "[:upper:]" | tr -d "\n"; echo -n $arg | sed 's/.\(.*\)/\1/'
 }
 
+## get privacy status for any experiments
+## -MTAB- experiments loaded by AE/Annotare uis checked by peach API
+## -GEOD-/-ERAD-/-ENAD- are loaded as public from now on
+peach_api_privacy_status(){
+expAcc=$1
+exp_import=`echo $expAcc | awk -F"-" '{print $2}'`
+
+if [ $exp_import == "MTAB" ]; then
+    response=`curl -s "http://peach.ebi.ac.uk:8480/api/privacy.txt?acc=$expAcc"`
+    if [ -z "$response" ]; then
+       echo "WARNING: Got empty response from http://peach.ebi.ac.uk:8480/api/privacy.txt?acc=$expAcc" >&2
+       exit 0
+    fi
+    privacyStatus=`echo $response | awk '{print $2}' | awk -F":" '{print $2}'`
+
+## if not MTAB, ie. GEOD or ENAD or ERAD are all loaded as public
+else 
+    privacyStatus=`echo "public"`
+fi
+
+echo $privacyStatus
+}
+
+peach_api_release_date(){
+expAcc=$1
+exp_import=`echo $expAcc | awk -F"-" '{print $2}'`
+
+if [ $exp_import == "MTAB" ]; then
+    response=`curl -s "http://peach.ebi.ac.uk:8480/api/privacy.txt?acc=$expAcc"`
+    if [ -z "$response" ]; then
+       echo "WARNING: Got empty response from http://peach.ebi.ac.uk:8480/api/privacy.txt?acc=$expAcc" >&2
+       exit 0
+    fi
+    releaseDate=`echo $response | awk '{print $3}' | awk -F":" '{print $2}'`
+
+## if not MTAB, ie. GEOD or ENAD or ERAD are all loaded as of today, considering its public and have release date 
+## not less than 2 days
+else 
+    releaseDate="`date --date="2 days ago" +%Y-%m-%d`"
+fi
+
+echo $releaseDate
+}
+
 # Applies fixes encoded in $fixesFile to $exp.$fileTypeToBeFixed.txt
 applyFixes() {
     exp=$1
