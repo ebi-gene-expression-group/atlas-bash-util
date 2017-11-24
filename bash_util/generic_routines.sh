@@ -87,6 +87,63 @@ fi
 echo $releaseDate
 }
 
+
+enad_experiment() {
+   expAcc=$1
+   expType=`echo $expAcc | awk -F"-" '{ print $2 }'`
+   if [ "$expType" == "ENAD" ]; then
+        return 0
+    else 
+        return 1
+    fi
+}
+
+## get ena study id from idf
+get_ena_study_id(){
+expAcc=$1
+ena_study_id=`cat $ATLAS_PROD/ENA_import/ENAD/$expAcc/$expAcc.idf.txt | grep -P "Comment\[SecondaryAccession\]" | awk -F"\t" '{ print $2 }'`
+echo "$ena_study_id"
+}
+
+# this function creates directory in $IRAP_SINGLE_LIB
+# for ena based experiments and irap single lib and copies processed isl matrices   
+move_ena_experiments_to_isl_studies(){
+expAcc=$1
+xmlConfigPath=$2
+expTargetDir=$(dirname $xmlConfigPath)
+
+# get organism name
+organism=`$ATLAS_PROD/sw/atlasinstall_prod/atlasprod/bash_util/get_organism.sh ${expTargetDir}`
+    if [ $? -ne 0 ]; then
+        echo "Error: failed to retrieve organism for $expAcc" >&2
+        exit 1
+    fi
+# make directory with organism name in ISL
+mkdir -p ${IRAP_SINGLE_LIB}/studies/$expAcc/$organism 
+
+ena_study_id=`get_ena_study_id $expAcc`
+    if [ $? -ne 0 ]; then
+        echo "Error: failed to retrieve ENA study id for $expAcc" >&2
+        exit 1
+    fi
+  
+# RNA-seqer API response to check if the ena study id matrices has been processed.   
+api_response=`curl -s "https://www.ebi.ac.uk/fg/rnaseq/api/tsv/getStudy/$ena_study_id"`
+   if [ $? -ne 0 ]; then
+        echo "ERROR: Unable to get response from study id $expAcc, not processed ENA study id $ena_study_id" >&2
+        echo $api_response
+        exit 1
+    fi
+     
+## download processed matrices from ftp server to the current directory  
+## works similar to rsync 
+wget -r -np -nd -N "ftp://ftp.ebi.ac.uk/pub/databases/arrayexpress/data/atlas/rnaseq/studies/ena/$ena_study_id" -P ${IRAP_SINGLE_LIB}/studies/$expAcc/$organism  > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Unable to download matrices for $expAcc, not processed ENA study id $ena_study_id" >&2
+     exit 1
+    fi   
+}
+
 # Applies fixes encoded in $fixesFile to $exp.$fileTypeToBeFixed.txt
 applyFixes() {
     exp=$1
