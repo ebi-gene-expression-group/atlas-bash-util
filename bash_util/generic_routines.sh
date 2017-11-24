@@ -109,8 +109,7 @@ echo "$ena_study_id"
 # for ena based experiments and irap single lib and copies processed isl matrices   
 move_ena_experiments_to_isl_studies(){
 expAcc=$1
-xmlConfigPath=$2
-expTargetDir=$(dirname $xmlConfigPath)
+expTargetDir=`find ${ATLAS_PROD}/analysis/*/rna-seq/experiments -type d -name $expAcc`
 
 # get organism name
 organism=`$ATLAS_PROD/sw/atlasinstall_prod/atlasprod/bash_util/get_organism.sh ${expTargetDir}`
