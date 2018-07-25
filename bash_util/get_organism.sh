@@ -6,30 +6,14 @@
 
 set -euo pipefail
 scriptDir=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source $scriptDir/generic_routines.sh
 projectRoot=${scriptDir}/..
-
-# Take the first two parts of the name, put an underscore in between
-# We use lowercase throughout atlasprod, Ensembl website capitalizes them like words
-# Exception: canis lupus familiaris is domesticated dog, Canis_familiaris in Ensembl (because Canis_lupus would be wolf)
-to_ensembl_species_lowercase(){
-	cat - | tr '[:upper:]' '[:lower:]' | awk '{print $1"_"$2}' | sed 's/canis_lupus/canis_familiaris/'
-}
 
 #This is the fastest but is only possible if the condensed sdrf has been already written out
 #We only condense the sdrf after successful analysis, and analysis needs organism name in e.g. GSEA, so we can't always use this
 #This assumes the organism field there is unique (it fetches the first one that appears otherwise)
 get_organism_from_condensed_sdrf(){
     cut -f 4,5,6 $1 | grep characteristic$'\t'organism$'\t' | head -n1 | cut -f 3 | to_ensembl_species_lowercase
-}
-
-#Unused - left here for aid in future debugging
-#Not adequate because an AE sdrf needs validation, and confirming there is a unique organism
-# - there can be assays not in configuration.xml lacking this metadata,and not used in experiment
-# - if there isn't a unique organism something needs to croak and this doesn't
-# The Perl code does this and more
-get_organism_from_sdrf_txt(){
-	f=$(head -n1 $1 | awk -F'\t' '{for (i = 1; i <= NF; ++i) if ($i == "Characteristics[organism]") print i }')
-	cut -f "$f" $1 | tail -n+2 | sort -u | to_ensembl_species_lowercase
 }
 
 # Call a Perl script that models AE import
