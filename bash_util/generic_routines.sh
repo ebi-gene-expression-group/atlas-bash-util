@@ -375,3 +375,25 @@ get_db_connection(){
     fi
     echo "postgresql://${user}:${pgAtlasUserPass}@${pgAtlasHostPort}/${pgAtlasDB}"
 }
+
+# Take the first two parts of the name, put an underscore in between
+# We use lowercase throughout atlasprod, Ensembl website capitalizes them like words
+# Exception: canis lupus familiaris is domesticated dog, Canis_familiaris in Ensembl (because Canis_lupus would be wolf)
+to_ensembl_species_lowercase(){
+	cat - | tr '[:upper:]' '[:lower:]' | awk '{print $1"_"$2}' | sed 's/canis_lupus/canis_familiaris/'
+}
+
+# Get organism from the plain .sdrf. Currently used only in loading single-cell
+# bundles.
+get_organism_from_sdrf_txt(){
+	sdrf_file=$1
+
+    if [ ! -e $sdrf_file ]; then
+        echo "ERROR: .sdrf file $sdrf_file does not exist"      
+        return 1
+    fi
+
+    f=$(head -n1 $sdrf_file | awk -F'\t' '{for (i = 1; i <= NF; ++i) if ($i ~ "Characteristics *\\[organism\\]") print i }')
+	cut -f "$f" $sdrf_file | tail -n+2 | sort -u | to_ensembl_species_lowercase
+}
+
