@@ -379,8 +379,9 @@ get_db_connection(){
 # Take the first two parts of the name, put an underscore in between
 # We use lowercase throughout atlasprod, Ensembl website capitalizes them like words
 # Exception: canis lupus familiaris is domesticated dog, Canis_familiaris in Ensembl (because Canis_lupus would be wolf)
+# For potential reuse later: sed 's/Oryza sativa \([A-Za-z]*\) /Oryza \1 /'
 to_ensembl_species_lowercase(){
-	cat - | tr '[:upper:]' '[:lower:]' | awk '{print $1"_"$2}' | sed 's/canis_lupus/canis_familiaris/'
+	cat - | sed 's/Oryza sativa Indica [A-Za-z]roup/Oryza indica/' | tr '[:upper:]' '[:lower:]' | awk '{print $1"_"$2}' | sed 's/canis_lupus/canis_familiaris/'
 }
 
 # Get organism from the plain .sdrf. Currently used only in loading single-cell
