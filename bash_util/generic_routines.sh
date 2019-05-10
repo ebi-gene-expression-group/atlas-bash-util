@@ -398,3 +398,38 @@ get_organism_from_sdrf_txt(){
 	cut -f "$f" $sdrf_file | tail -n+2 | sort -u | to_ensembl_species_lowercase
 }
 
+## monitor all lsf jobs that are completed through log irrespective of success or exitted
+wait_until_all_jobs_completed() {
+  logJobs=$1
+
+  total_jobs=$(cat $logJobs | wc -l)
+  echo "total jobs submitted - $total_jobs"
+
+  ## initialise completed and exited jobs   
+  completed=0
+  exited=0
+ 
+  while true; do
+
+    finished="$(($completed + $exited))"
+    echo "jobs finished - $finished"
+
+    if [ $finished -eq $total_jobs ]; then
+      break
+    fi
+
+    ## wait for a while
+    sleep 60
+
+    ## count 
+    completed=$(cat $logJobs | xargs -n 100 grep -l 'Successfully completed.' | wc -l)
+    exited=$(cat $logJobs | xargs -n 100 grep -l 'Exited with' | wc -l)
+  done
+
+  echo "lsf jobs completed - $finished"
+
+  if [ $exited -gt 0 ]; then
+    echo "lsf jobs exited - $exited"
+    exit 1
+  fi
+}
