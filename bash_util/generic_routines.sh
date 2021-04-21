@@ -433,3 +433,67 @@ wait_until_all_jobs_completed() {
     exit 1
   fi
 }
+
+# Determine if experiment is microarray, rna-seq or proteomics
+get_exp_technology(){
+ 
+    expAcc=$1
+    # Unset $baselineOrDifferential from last time
+    technology=
+ 
+    if [[ $expAcc == *"PROT"* ]]; then
+        technology="proteomics"
+    else
+		# Does this experiment have a directory under the baseline or differential
+		# processing space yet?
+		ls ${ATLAS_PROD}/analysis/differential/microarray/experiments/${expAcc} 2> /dev/null 1> /dev/null
+		foundInMicroarray=$?
+		if [ $foundInMicroarray -eq 0 ]; then
+			technology="microarray"
+		else
+			ls ${ATLAS_PROD}/analysis/*/rna-seq/experiments/${expAcc} 2> /dev/null 1> /dev/null
+			foundInRna_seq=$?
+			if [ $foundInRna_seq -eq 0 ]; then
+				technology="rna-seq"
+			fi
+		fi
+	fi
+     
+    echo "$technology"
+}
+
+# Determine if experiment is baseline or differential 
+get_baseline_or_differential(){
+ 
+    expAcc=$1
+    # Unset $baselineOrDifferential from last time
+     baselineOrDifferential=
+ 
+     # Does this experiment have a directory under the baseline or differential
+     # processing space yet?
+     ls ${ATLAS_PROD}/analysis/differential/*/experiments/${expAcc} 2> /dev/null 1> /dev/null
+     foundInDifferential=$?
+     if [ $foundInDifferential -eq 0 ]; then
+         baselineOrDifferential="differential"
+     else
+         ls ${ATLAS_PROD}/analysis/baseline/rna-seq/experiments/${expAcc} 2> /dev/null 1> /dev/null
+         foundInBaseline=$?
+         if [ $foundInBaseline -eq 0 ]; then
+             baselineOrDifferential="baseline"
+         fi
+     fi
+      
+    echo "$baselineOrDifferential"
+}
+
+# Get a directory for a given experiment 
+get_experiment_target_dir(){
+   expAcc=$1
+   
+   baselineOrDifferential=$(get_baseline_or_differential $expAcc)
+   microarrayORrna_seq=$(get_microarray_or_rna_seq $expAcc)
+      
+    expTargetDir=${ATLAS_PROD}/analysis/$baselineOrDifferential/$microarrayORrna_seq/experiments/${expAcc}
+    echo "$expTargetDir"
+}
+
