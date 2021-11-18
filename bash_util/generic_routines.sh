@@ -59,7 +59,7 @@ if [ $exp_import == "MTAB" ]; then
     privacyStatus=`echo $response | awk '{print $2}' | awk -F":" '{print $2}'`
 
 ## if not MTAB, ie. GEOD or ENAD or ERAD are all loaded as public
-else 
+else
     privacyStatus=`echo "public"`
 fi
 
@@ -78,9 +78,9 @@ if [ $exp_import == "MTAB" ]; then
     fi
     releaseDate=`echo $response | awk '{print $3}' | awk -F":" '{print $2}'`
 
-## if not MTAB, ie. GEOD or ENAD or ERAD are all loaded as of today, considering its public and have release date 
+## if not MTAB, ie. GEOD or ENAD or ERAD are all loaded as of today, considering its public and have release date
 ## not less than 2 days
-else 
+else
     releaseDate="`date --date="2 days ago" +%Y-%m-%d`"
 fi
 
@@ -93,7 +93,7 @@ enad_experiment() {
    expType=`echo $expAcc | awk -F"-" '{ print $2 }'`
    if [ "$expType" == "ENAD" ]; then
         return 0
-    else 
+    else
         return 1
     fi
 }
@@ -106,7 +106,7 @@ echo "$ena_study_id"
 }
 
 # this function creates directory in $IRAP_SINGLE_LIB
-# for ena based experiments and irap single lib and copies processed isl matrices   
+# for ena based experiments and irap single lib and copies processed isl matrices
 move_ena_experiments_to_isl_studies(){
 expAcc=$1
 expTargetDir=`find ${ATLAS_PROD}/analysis/*/rna-seq/experiments -type d -name $expAcc`
@@ -118,29 +118,29 @@ organism=`$ATLAS_PROD/sw/atlasinstall_prod/atlasprod/bash_util/get_organism.sh $
         exit 1
     fi
 # make directory with organism name in ISL
-mkdir -p ${IRAP_SINGLE_LIB}/studies/$expAcc/$organism 
+mkdir -p ${IRAP_SINGLE_LIB}/studies/$expAcc/$organism
 
 ena_study_id=`get_ena_study_id $expAcc`
     if [ $? -ne 0 ]; then
         echo "Error: failed to retrieve ENA study id for $expAcc" >&2
         exit 1
     fi
-  
-# RNA-seqer API response to check if the ena study id matrices has been processed.   
+
+# RNA-seqer API response to check if the ena study id matrices has been processed.
 api_response=`curl -s "https://www.ebi.ac.uk/fg/rnaseq/api/tsv/getStudy/$ena_study_id"`
    if [ $? -ne 0 ]; then
         echo "ERROR: Unable to get response from study id $expAcc, not processed ENA study id $ena_study_id" >&2
         echo $api_response
         exit 1
     fi
-     
-## download processed matrices from ftp server to the current directory  
-## works similar to rsync 
+
+## download processed matrices from ftp server to the current directory
+## works similar to rsync
 wget -r -np -nd -N "ftp://ftp.ebi.ac.uk/pub/databases/arrayexpress/data/atlas/rnaseq/studies/ena/$ena_study_id" -P ${IRAP_SINGLE_LIB}/studies/$expAcc/$organism  > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo "ERROR: Unable to download matrices for $expAcc, not processed ENA study id $ena_study_id" >&2
      exit 1
-    fi   
+    fi
 }
 
 # Applies fixes encoded in $fixesFile to $exp.$fileTypeToBeFixed.txt
@@ -332,7 +332,13 @@ find_properties_file() {
 }
 
 get_arraydesign_file() {
-    find -L ${ATLAS_PROD}/bioentity_properties/array_designs -type f -name "*.${1}.tsv" | head -n1
+  arraydesign=$1
+  organism=$2
+  if [ -z ${2+x} ]; then
+    find -L ${ATLAS_PROD}/bioentity_properties/array_designs -type f -name "*.${arraydesign}.tsv" | head -n1
+  else
+    find -L ${ATLAS_PROD}/bioentity_properties/array_designs -type f -name "${organism}.${arraydesign}.tsv" | head -n1
+  fi
 }
 
 get_organism_given_arraydesign_file(){
@@ -390,7 +396,7 @@ get_organism_from_sdrf_txt(){
 	sdrf_file=$1
 
     if [ ! -e $sdrf_file ]; then
-        echo "ERROR: .sdrf file $sdrf_file does not exist"      
+        echo "ERROR: .sdrf file $sdrf_file does not exist"
         return 1
     fi
 
@@ -405,10 +411,10 @@ wait_until_all_jobs_completed() {
   total_jobs=$(cat $logJobs | wc -l)
   echo "total jobs submitted - $total_jobs"
 
-  ## initialise completed and exited jobs   
+  ## initialise completed and exited jobs
   completed=0
   exited=0
- 
+
   while true; do
 
     finished="$(($completed + $exited))"
@@ -421,7 +427,7 @@ wait_until_all_jobs_completed() {
     ## wait for a while
     sleep 60
 
-    ## count 
+    ## count
     completed=$(cat $logJobs | xargs -n 100 grep -l 'Successfully completed.' | wc -l)
     exited=$(cat $logJobs | xargs -n 100 grep -l 'Exited with' | wc -l)
   done
@@ -436,11 +442,11 @@ wait_until_all_jobs_completed() {
 
 # Determine if experiment is microarray, rna-seq or proteomics
 get_exp_technology(){
- 
+
     expAcc=$1
     # Unset $baselineOrDifferential from last time
     technology=
- 
+
     if [[ $expAcc == *"PROT"* ]]; then
         technology="proteomics"
     else
@@ -458,17 +464,17 @@ get_exp_technology(){
 			fi
 		fi
 	fi
-     
+
     echo "$technology"
 }
 
-# Determine if experiment is baseline or differential 
+# Determine if experiment is baseline or differential
 get_baseline_or_differential(){
- 
+
     expAcc=$1
     # Unset $baselineOrDifferential from last time
      baselineOrDifferential=
- 
+
      # Does this experiment have a directory under the baseline or differential
      # processing space yet?
      ls ${ATLAS_PROD}/analysis/differential/*/experiments/${expAcc} 2> /dev/null 1> /dev/null
@@ -482,18 +488,17 @@ get_baseline_or_differential(){
              baselineOrDifferential="baseline"
          fi
      fi
-      
+
     echo "$baselineOrDifferential"
 }
 
-# Get a directory for a given experiment 
+# Get a directory for a given experiment
 get_experiment_target_dir(){
    expAcc=$1
-   
+
    baselineOrDifferential=$(get_baseline_or_differential $expAcc)
    microarrayORrna_seq=$(get_microarray_or_rna_seq $expAcc)
-      
+
     expTargetDir=${ATLAS_PROD}/analysis/$baselineOrDifferential/$microarrayORrna_seq/experiments/${expAcc}
     echo "$expTargetDir"
 }
-
