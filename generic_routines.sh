@@ -5,6 +5,19 @@ IFS="
 
 PEACH_API_URI=${PEACH_API_URI:'http://peach.ebi.ac.uk:8480/api'}
 
+# Check that a given variable is defined
+
+check_variables() {
+    vars=("$@")
+
+    for variable in "${vars[@]}"; do
+        local value=${!variable}
+        if [ -z "$value" ]; then
+            die "ERROR: $variable not set";
+        fi
+    done
+}
+
 # Echo error but don't exit
 
 warn (){
@@ -234,7 +247,7 @@ applyAllFixesForExperiment() {
 check_prod_user() {
     user=$(whoami)
 
-    [ -z ${ATLAS_PROD_USER+x} ] && die "Env var ATLASPROD_PATH for the path to atlas prod software check out needs to be defined."
+    [ -z ${ATLAS_PROD_USER+x} ] && die "Env var ATLAS_PROD_USER for the Atlas production user needs to be defined."
 
     if [ "$user" != "$ATLAS_PROD_USER" ]; then
         echo "ERROR: You need be sudo-ed as $ATLAS_PROD_USER to run this script" >&2
