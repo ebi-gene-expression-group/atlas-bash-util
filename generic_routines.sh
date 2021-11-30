@@ -3,7 +3,6 @@
 IFS="
 "
 
-ATLAS_PROD_USER=${ATLAS_PROD_USER:-'$ATLAS_PROD_USER'}
 PEACH_API_URI=${PEACH_API_URI:'http://peach.ebi.ac.uk:8480/api'}
 
 # Echo error but don't exit
@@ -234,6 +233,9 @@ applyAllFixesForExperiment() {
 # Restriction to run prod scripts as the prod user only
 check_prod_user() {
     user=$(whoami)
+
+    [ -z ${ATLAS_PROD_USER+x} ] && die "Env var ATLASPROD_PATH for the path to atlas prod software check out needs to be defined."
+
     if [ "$user" != "$ATLAS_PROD_USER" ]; then
         echo "ERROR: You need be sudo-ed as $ATLAS_PROD_USER to run this script" >&2
         return 1
