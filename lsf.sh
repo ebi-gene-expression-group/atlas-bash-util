@@ -29,8 +29,6 @@ lsf_submit(){
         mkdir -p $(dirname $logPrefix)
     fi
 
-    # Check that we're not running this job already
-   
     local bsub_cmd=$(echo -e "bsub $jobQueue $jobName $lsfMem $nThreads $jobGroupName $workingDir $logPrefix \"$commandString\"" | tr -s " ")
 
     local bsubOutput=

@@ -31,7 +31,7 @@ logPrefix=
 monitorJob=yes
 pollFreqSecs=10
 
-while getopts ":c:w:m:p:j:g:l:m:f:q:" o; do
+while getopts ":c:w:m:p:j:g:l:n:f:q:" o; do
     case "${o}" in
         c)
             commandString=${OPTARG}
@@ -57,7 +57,7 @@ while getopts ":c:w:m:p:j:g:l:m:f:q:" o; do
         l)
             logPrefix=${OPTARG}
             ;;
-        m)
+        n)
             monitorJob=${OPTARG}
             ;;
         f)
