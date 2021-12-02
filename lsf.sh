@@ -25,7 +25,7 @@ lsf_submit(){
     if [ -n "$jobGroupName" ]; then jobGroupName=" -g $jobGroupName"; fi
     if [ -n "$workingDir" ]; then workingDir=" -cwd \"$workingDir\""; fi
     if [ -n "$logPrefix" ]; then 
-        logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}\""; 
+        logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""; 
         mkdir -p $(dirname $logPrefix)
     fi
 
@@ -85,21 +85,60 @@ lsf_monitor_job() {
     local jobId=$1
     local pollSecs=${2:-10}
     local jobStdout=$3
-    
+    local jobStderr=
+    local monitorStyle=${4:-'std_out_err'}
+   
+    echo "Monitor style: $monitorStyle"
+ 
+    # Delete any prior logs
+
+    if [ -n "$jobStdout" ]; then
+        jobStderr=$(echo -e "$jobStdout" | sed s/.out$/.err/)
+        rm -rf $jobStdout $jobStderr
+    fi
+
+    # If a log file is provided and viewLogOutput is 'yes', then start tailing the files
+   
+    local tail_pid=
+    if [ -n "$jobStdout" ] && [ "$monitorStyle" = 'std_out_err' ]; then
+        touch $jobStderr $jobStdout
+        tail -f $jobStderr -f $jobStdout & 
+        tail_pid=$!
+    else
+        monitorStyle='status'
+    fi
+
+    # Now submit the job and start status checking
+
     local lsfJobStatus=$(lsf_job_status "$jobId" "$jobStdout")
     local lastStatus=$lsfJobStatus
-    echo -en "Starting status is ${lsfJobStatus}" 1>&2
 
+    if [ "$monitorStyle" = 'status' ]; then echo -en "Starting status is ${lsfJobStatus}" 1>&2; fi
+    
     while [ "$lsfJobStatus" = 'PEND' ] || [ "$lsfJobStatus" = 'RUN' ]; do
-        echo -n '.' 1>&2
+        
+        if [ "$monitorStyle" = 'status' ]; then echo -n '.' 1>&2; fi
+        
         sleep $pollSecs
         lsfJobStatus=$(lsf_job_status "$jobId" "$jobStdout" 2>/dev/null)
         if [ "$lsfJobStatus" != "$lastStatus" ]; then
-            echo -en "\nStatus is now ${lsfJobStatus}" 1>&2
+
+            if [ "$monitorStyle" = 'status' ]; then echo -en "\nStatus is now ${lsfJobStatus}" 1>&2; fi
+
             lastStatus=$lsfJobStatus
         fi
     done
-    echo -e "\n" 1>&2
-    echo -n "$lsfJobStatus"
+
+    if [ "$monitorStyle" = 'status' ]; then echo -e "\n" 1>&2; fi
+    
+    # If we've beein tailing job output, then kill it
+
+    if [ -n "$jobStdout" ] && [ "$monitorStyle" = 'std_out_err' ]; then
+        kill $tail_pid
+    fi
+        
+    if [ "$lsfJobStatus" != 'DONE' ]; then
+        return 1
+    fi
 } 
 
