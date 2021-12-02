@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+scriptDir=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source $scriptDir/generic_routines.sh
+source $scriptDir/lsf.sh
+
+usageOpts="[ -c <command string> ] \
+           [ -w <working directory, default current working directory> ] \
+           [ -m <memory in Mb, defaults to cluster defalt> ] \
+           [ -p <number of cores, defaults to cluster defalt> ] \
+           [ -j <job name, defaults to cluster default ] \
+           [ -g <job group name, defaults to cluster default ] \
+           [ -l <log prefix, no logs written by default ] \
+           [ -m <monitor submitted job? Defaults to yes> ] \
+           [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
+           [ -q <lsf queue, defaults to cluster default ]"
+
+usageOpts=$(echo -e "$usageOpts" | tr -s " ")
+usage() { echo "Usage: $0 $usageOpts"; }
+
+# Parse arguments
+
+commandString=
+workingDir=
+memory=
+cores=
+jobName=
+queue=
+jobGroupName=
+logPrefix=
+monitorJob=yes
+pollFreqSecs=10
+
+while getopts ":c:w:m:p:j:g:l:m:f:q:" o; do
+    case "${o}" in
+        c)
+            commandString=${OPTARG}
+            ;;
+        w)
+            workingDir=${OPTARG}
+            ;;
+        m)
+            memory=${OPTARG}
+            ;;
+        p)
+            cores=${OPTARG}
+            ;;
+        j)
+            jobName=${OPTARG}
+            ;;
+        q)
+            queue=${OPTARG}
+            ;;
+        g)
+            jobGroupName=${OPTARG}
+            ;;
+        l)
+            logPrefix=${OPTARG}
+            ;;
+        m)
+            monitorJob=${OPTARG}
+            ;;
+        f)
+            pollFreqSecs=${OPTARG}
+            ;;
+        *)
+            usage
+            exit 0
+            ;;
+    esac
+done
+
+# Submit the jobs
+
+lsfJobId=$(lsf_submit "$commandString" "$jobQueue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix")
+submitStatus=$?
+
+if [ "$submitStatus" -ne "0" ] && [ -n "$lsfJobId" ]; then
+    die "Job submission failed, status is $submitStatus"
+else
+    echo "Job submission succeeded, received job ID $lsfJobId"
+    
+    if [ "$monitorJob" = 'yes' ]; then
+        logFile=
+        if [ -n "$logPrefix" ]; then
+            logFile=${logPrefix}.out
+        fi 
+
+        finalStatus=$(lsf_monitor_job "$lsfJobId" "$pollFreqSecs" "$logFile")
+        if [ "$finalStatus" != 'DONE' ]; then
+            die "Command \"$commandString\" failed, status $finalStatus"
+        fi
+    fi
+fi
