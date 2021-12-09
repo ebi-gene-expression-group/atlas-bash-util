@@ -8,9 +8,10 @@ usageOpts="[ -c <command string> ] \
            [ -w <working directory, default current working directory> ] \
            [ -m <memory in Mb, defaults to cluster defalt> ] \
            [ -p <number of cores, defaults to cluster defalt> ] \
-           [ -j <job name, defaults to cluster default ] \
-           [ -g <job group name, defaults to cluster default ] \
-           [ -l <log prefix, no logs written by default ] \
+           [ -j <job name, defaults to cluster default> ] \
+           [ -g <job group name, defaults to cluster default> ] \
+           [ -l <log prefix, no logs written by default> ] \
+           [ -e <clean up log files after monitored run? Defaults to no> ] \
            [ -m <monitor submitted job? Defaults to yes> ] \
            [ -s <monitor style: 'status' for job status updates on polling, 'std_out_err' to report ongoing content of logs (where used). Defaults to std_out_err> ] \
            [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
@@ -29,11 +30,12 @@ jobName=
 queue=
 jobGroupName=
 logPrefix=
+logCleanup=no
 monitorJob=yes
 pollFreqSecs=10
 monitorStyle=std_out_err
 
-while getopts ":c:w:m:p:j:g:l:n:f:q:s:" o; do
+while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:" o; do
     case "${o}" in
         c)
             commandString=${OPTARG}
@@ -58,6 +60,9 @@ while getopts ":c:w:m:p:j:g:l:n:f:q:s:" o; do
             ;;
         l)
             logPrefix=${OPTARG}
+            ;;
+        e)
+            logCleanup=${OPTARG}
             ;;
         n)
             monitorJob=${OPTARG}
@@ -91,7 +96,8 @@ else
             logFile=${logPrefix}.out
         fi 
 
-        lsf_monitor_job "$lsfJobId" "$pollFreqSecs" "$logFile" "$monitorStyle"
+        lsf_monitor_job "$lsfJobId" "$pollFreqSecs" "$logFile" "$monitorStyle" "$logCleanup"
+
         if [ $? -ne 0 ]; then
             die "Command \"$commandString\" failed"
         fi

@@ -25,9 +25,10 @@ Usage: ./atlas-lsf [ -c <command string> ] \
     [ -w <working directory, default current working directory> ] \
     [ -m <memory in Mb, defaults to cluster defalt> ] \
     [ -p <number of cores, defaults to cluster defalt> ] \
-    [ -j <job name, defaults to cluster default ] \
-    [ -g <job group name, defaults to cluster default ] \
-    [ -l <log prefix, no logs written by default ] \
+    [ -j <job name, defaults to cluster default> ] \
+    [ -g <job group name, defaults to cluster default> ] \
+    [ -l <log prefix, no logs written by default> ] \
+    [ -e <clean up log files after monitored run? Defaults to no> ] \
     [ -m <monitor submitted job? Defaults to yes> ] \
     [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
     [ -q <lsf queue, defaults to cluster default ]
