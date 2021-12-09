@@ -77,7 +77,7 @@ done
 
 # Submit the jobs
 
-lsfJobId=$(lsf_submit "$commandString" "$jobQueue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix")
+lsfJobId=$(lsf_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix")
 submitStatus=$?
 
 if [ "$submitStatus" -ne "0" ] && [ -n "$lsfJobId" ]; then
