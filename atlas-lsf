@@ -96,15 +96,9 @@ else
             logFile=${logPrefix}.out
         fi 
 
-        lsf_monitor_job "$lsfJobId" "$pollFreqSecs" "$logFile" "$monitorStyle"
-        jobEndStatus=$?
+        lsf_monitor_job "$lsfJobId" "$pollFreqSecs" "$logFile" "$monitorStyle" "$logCleanup"
 
-        if [ -n "$logPrefix" ] && [ "$logCleanup" = 'yes' ]; then
-            echo "Cleaning up logs"
-            rm -rf ${logPrefix}.out ${logPrefix}.err
-        fi
-
-        if [ $jobEndStatus -ne 0 ]; then
+        if [ $? -ne 0 ]; then
             die "Command \"$commandString\" failed"
         fi
     fi

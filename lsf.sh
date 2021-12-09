@@ -87,6 +87,7 @@ lsf_monitor_job() {
     local jobStdout=$3
     local jobStderr=
     local monitorStyle=${4:-'std_out_err'}
+    local logCleanup=${5:-'no'}
    
     echo "Monitor style: $monitorStyle"
  
@@ -134,7 +135,12 @@ lsf_monitor_job() {
     # If we've beein tailing job output, then kill it
 
     if [ -n "$jobStdout" ] && [ "$monitorStyle" = 'std_out_err' ]; then
-        kill $tail_pid
+        kill -9 $tail_pid
+        wait $pid > /dev/null 2>&1
+        if [ "$logCleanup" = 'yes' ]; then
+            echo "Cleaning up logs $jobStdout, $jobStderr"
+            rm -rf $jobStdout $jobStderr
+        fi
     fi
         
     if [ "$lsfJobStatus" != 'DONE' ]; then
