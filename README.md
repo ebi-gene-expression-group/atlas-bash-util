@@ -1,6 +1,14 @@
-# Bash utilities used by Expression Atlas
+# Bash utilities used by Expression Atlas [![Anaconda-Server Badge](https://anaconda.org/ebi-gene-expression-group/atlas-bash-util/badges/installer/conda.svg)](https://anaconda.org/ebi-gene-expression-group/atlas-bash-util)
 
 This is a module factored out of legacy code to provide common bash utilities to Atlas scripts. 
+
+## Installation
+
+This package can be installed via Bioconda:
+
+```
+conda install -c ebi-gene-expression-group bash-util
+```
 
 ## Usage
 
