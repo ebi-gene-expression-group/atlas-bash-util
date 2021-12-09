@@ -7,7 +7,7 @@ This is a module factored out of legacy code to provide common bash utilities to
 This package can be installed via Bioconda:
 
 ```
-conda install -c ebi-gene-expression-group bash-util
+conda install -c ebi-gene-expression-group atlas-bash-util
 ```
 
 ## Usage
