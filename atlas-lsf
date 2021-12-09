@@ -35,7 +35,7 @@ monitorJob=yes
 pollFreqSecs=10
 monitorStyle=std_out_err
 
-while getopts ":c:w:m:p:j:g:l:n:f:q:s:" o; do
+while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:" o; do
     case "${o}" in
         c)
             commandString=${OPTARG}
@@ -60,6 +60,9 @@ while getopts ":c:w:m:p:j:g:l:n:f:q:s:" o; do
             ;;
         l)
             logPrefix=${OPTARG}
+            ;;
+        e)
+            logCleanup=${OPTARG}
             ;;
         n)
             monitorJob=${OPTARG}
