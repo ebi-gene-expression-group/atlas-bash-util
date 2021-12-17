@@ -34,8 +34,9 @@ logCleanup=no
 monitorJob=yes
 pollFreqSecs=10
 monitorStyle=std_out_err
+prioritise=no
 
-while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:" o; do
+while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:r:" o; do
     case "${o}" in
         c)
             commandString=${OPTARG}
@@ -73,6 +74,9 @@ while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:" o; do
         s)
             monitorStyle=${OPTARG}
             ;;
+        r)
+            prioritise=${OPTARG}
+            ;;
         *)
             usage
             exit 0
@@ -82,7 +86,7 @@ done
 
 # Submit the jobs
 
-lsfJobId=$(lsf_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix")
+lsfJobId=$(lsf_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix" "$prioritise")
 submitStatus=$?
 
 if [ "$submitStatus" -ne "0" ] && [ -n "$lsfJobId" ]; then
