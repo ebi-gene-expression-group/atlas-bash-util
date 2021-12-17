@@ -9,6 +9,7 @@ lsf_submit(){
     local jobGroupName="$6"       
     local workingDir="$7"
     local logPrefix="$8"
+    local prioritise="$9"
 
     # Need at least the command string
 
@@ -39,7 +40,12 @@ lsf_submit(){
     if [ $? -ne 0 ]; then
         die "Job submission failed"
     else
-        echo $bsubOutput | head -n1 | cut -d'<' -f2 | cut -d'>' -f1
+        local jobId=$(echo $bsubOutput | head -n1 | cut -d'<' -f2 | cut -d'>' -f1)
+        if [ "$prioritise" = 'yes' ]; then
+            warn "Prioritising $jobId"
+            btop $jobId
+        fi
+        echo $jobId
     fi
 }
 
