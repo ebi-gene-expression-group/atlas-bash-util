@@ -27,7 +27,7 @@ lsf_submit(){
     if [ -n "$workingDir" ]; then workingDir=" -cwd \"$workingDir\""; fi
     if [ -n "$logPrefix" ]; then 
         mkdir -p $(dirname $logPrefix)
-        logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""; 
+        logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""
     fi
 
     local bsub_cmd=$(echo -e "bsub $jobQueue $jobName $lsfMem $nThreads $jobGroupName $workingDir $logPrefix \"$commandString\"" | tr -s " ")
