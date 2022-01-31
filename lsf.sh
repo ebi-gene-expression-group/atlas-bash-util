@@ -145,6 +145,11 @@ lsf_monitor_job() {
         wait $pid > /dev/null 2>&1
         if [ "$logCleanup" = 'yes' ]; then
             echo "Cleaning up logs $jobStdout, $jobStderr"
+            
+            # Sleep for a bit before we delete, otherwise it seems like the
+            # tail we killed above doesn't quite finish reporting 
+           
+            sleep 10 
             rm -rf $jobStdout $jobStderr
         fi
     fi
