@@ -141,6 +141,9 @@ lsf_monitor_job() {
     # If we've beein tailing job output, then kill it
 
     if [ -n "$jobStdout" ] && [ "$monitorStyle" = 'std_out_err' ]; then
+    
+        # Sleep before we kill to allow final outputs to print.
+        sleep 10 
         kill -9 $tail_pid
         wait $pid > /dev/null 2>&1
         if [ "$logCleanup" = 'yes' ]; then
