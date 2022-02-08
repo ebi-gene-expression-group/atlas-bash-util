@@ -372,8 +372,8 @@ get_analysis_path_for_experiment_accession() {
 }
 
 get_db_connection() {
-    user="***REMOVED***"
-    dbIdentifier="pro"
+    user=$1
+    dbIdentifier=$2
     local OPTARG OPTIND opt
     while getopts ":u:d:" opt; do
         case $opt in
