@@ -6,8 +6,8 @@ source $scriptDir/lsf.sh
 
 usageOpts="[ -c <command string> ] \
            [ -w <working directory, default current working directory> ] \
-           [ -m <memory in Mb, defaults to cluster defalt> ] \
-           [ -p <number of cores, defaults to cluster defalt> ] \
+           [ -m <memory in Mb, defaults to cluster default> ] \
+           [ -p <number of cores, defaults to cluster default> ] \
            [ -j <job name, defaults to cluster default> ] \
            [ -g <job group name, defaults to cluster default> ] \
            [ -l <log prefix, no logs written by default> ] \
@@ -15,7 +15,8 @@ usageOpts="[ -c <command string> ] \
            [ -m <monitor submitted job? Defaults to yes> ] \
            [ -s <monitor style: 'status' for job status updates on polling, 'std_out_err' to report ongoing content of logs (where used). Defaults to std_out_err> ] \
            [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
-           [ -q <lsf queue, defaults to cluster default ]"
+           [ -q <lsf queue, defaults to cluster default> ] \
+           [ -v <name of the conda environment in which to run the job> ]"
 
 usageOpts=$(echo -e "$usageOpts" | tr -s " ")
 usage() { echo "Usage: $0 $usageOpts"; }
@@ -36,7 +37,7 @@ pollFreqSecs=10
 monitorStyle=std_out_err
 prioritise=no
 
-while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:r:" o; do
+while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:r:v:" o; do
     case "${o}" in
         c)
             commandString=${OPTARG}
@@ -77,6 +78,9 @@ while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:r:" o; do
         r)
             prioritise=${OPTARG}
             ;;
+        v)
+            condaEnv=${OPTARG}
+            ;;
         *)
             usage
             exit 0
@@ -86,7 +90,7 @@ done
 
 # Submit the jobs
 
-lsfJobId=$(lsf_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix" "$prioritise")
+lsfJobId=$(lsf_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix" "$prioritise" "$condaEnv")
 submitStatus=$?
 
 if [ "$submitStatus" -ne "0" ] && [ -n "$lsfJobId" ]; then
