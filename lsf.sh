@@ -27,8 +27,8 @@ lsf_submit(){
     if [ -n "$jobGroupName" ]; then jobGroupName=" -g $jobGroupName"; fi
     if [ -n "$workingDir" ]; then workingDir=" -cwd \"$workingDir\""; fi
     if [ -n "$condaEnv" ]; then
-        condaBase=$(dirname "$( which conda )" )
-        condaCmd=". ${condaBase}/activate ${condaBase}/../envs/${condaEnv}"
+        condaBase=$(conda info --json | awk '/conda_prefix/ { gsub(/"|,/, "", $2); print $2 }')
+        condaCmd=". ${condaBase}/bin/activate ${condaBase}/envs/${condaEnv}"
         commandString="${condaCmd} && ${commandString}"
     fi
     if [ -n "$logPrefix" ]; then 
