@@ -10,6 +10,7 @@ lsf_submit(){
     local workingDir="$7"
     local logPrefix="$8"
     local prioritise="$9"
+    local condaEnv="${10}"
 
     # Need at least the command string
 
@@ -25,6 +26,11 @@ lsf_submit(){
     if [ -n "$nThreads" ]; then nThreads=" -R \"span[ptile=$nThreads]\" -n $nThreads"; fi
     if [ -n "$jobGroupName" ]; then jobGroupName=" -g $jobGroupName"; fi
     if [ -n "$workingDir" ]; then workingDir=" -cwd \"$workingDir\""; fi
+    if [ -n "$condaEnv" ]; then
+        condaBase=$(conda info --json | awk '/conda_prefix/ { gsub(/"|,/, "", $2); print $2 }')
+        condaCmd=". ${condaBase}/bin/activate ${condaBase}/envs/${condaEnv}"
+        commandString="${condaCmd} && ${commandString}"
+    fi
     if [ -n "$logPrefix" ]; then 
         mkdir -p $(dirname $logPrefix)
         logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""

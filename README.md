@@ -31,8 +31,8 @@ Usage:
 atlas-lsf -h
 Usage: ./atlas-lsf [ -c <command string> ] \
     [ -w <working directory, default current working directory> ] \
-    [ -m <memory in Mb, defaults to cluster defalt> ] \
-    [ -p <number of cores, defaults to cluster defalt> ] \
+    [ -m <memory in Mb, defaults to cluster default> ] \
+    [ -p <number of cores, defaults to cluster default> ] \
     [ -j <job name, defaults to cluster default> ] \
     [ -g <job group name, defaults to cluster default> ] \
     [ -l <log prefix, no logs written by default> ] \
@@ -40,6 +40,7 @@ Usage: ./atlas-lsf [ -c <command string> ] \
     [ -m <monitor submitted job? Defaults to yes> ] \
     [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
     [ -q <lsf queue, defaults to cluster default ]
+    [ -v <name of the conda environment in which to run the job> ]
 ```
 
 Examples:
@@ -144,4 +145,13 @@ PS:
 Read file </path/to/foo.err> for stderr output of this job.
 ```
 
+Submit a job that should run in a conda environment:
+
+```
+> atlas-lsf -v myenv -c "echo $CONDA_PREFIX > myenv.txt" -f 2 -n no
+Job submission succeeded, received job ID 2711148
+
+>cat myenv.txt
+/hps/software/users/GTL/user/miniconda3/envs/myenv
+```
 
