@@ -12,7 +12,7 @@ usageOpts="[ -c <command string> ] \
            [ -g <job group name, defaults to cluster default> ] \
            [ -l <log prefix, no logs written by default> ] \
            [ -e <clean up log files after monitored run? Defaults to no> ] \
-           [ -m <monitor submitted job? Defaults to yes> ] \
+           [ -n <monitor submitted job? Defaults to yes> ] \
            [ -s <monitor style: 'status' for job status updates on polling, 'std_out_err' to report ongoing content of logs (where used). Defaults to std_out_err> ] \
            [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
            [ -q <lsf queue, defaults to cluster default> ] \
