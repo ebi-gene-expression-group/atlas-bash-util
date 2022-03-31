@@ -22,30 +22,34 @@ check_variables() {
 
 warn (){
     errMsg=$1
+    quiet=${2:-'no'}
+    newline=${3:-'yes'}
 
     check_variables 'errMsg'
 
-    echo -e "$errMsg" 1>&2
+    if [ "$quiet" = "no" ]; then
+        if [ "$newline" = "yes" ]; then
+            echo -e "$errMsg" 1>&2
+        else
+            echo -en "$errMsg" 1>&2
+        fi
+    fi
 }
 
 # Echo error and exit
 
 die (){
     errMsg=$1
-    errCode=$2
+    errCode=${2:1}
+    quiet=${3:-'no'}
+    newline=${4:-'yes'}
 
     check_variables 'errMsg'
 
-    if [ -n "$errCode" ]; then
-        errMsg="$errMsg - exiting with error code $errCode"
-    else
-        errCode=1
-    fi
+    warn "$errMsg - exiting with error code $errCode" "$quiet" "$newline"
 
-    echo -e "$errMsg" 1>&2
     exit $errCode
 }
-
 
 # Send Report
 send_report() {
