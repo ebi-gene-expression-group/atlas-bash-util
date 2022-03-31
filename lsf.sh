@@ -162,13 +162,40 @@ lsf_monitor_job() {
     # If we've beein tailing job output, then kill it
 
     if [ -n "$jobStdout" ];then
-        
+    
+        # Sometimes the log files take a few seconds to appear, which can cause
+        # problems for the below with very short jobs.
+
+        # Wait for log file to appear
+
+        local checkCount=0
+        while [ ! -f "$jobStdout" ] && [ $checkCount -lt 60 ]; do
+            sleep 1
+            checkCount=$((checkCount+1))
+        done    
+        if [ ! -f "$jobStdout" ]; then
+            die "$jobStdout still absent, something strange with job $jobId"
+        fi
+   
+        # Wait for log file to be complete
+
+        local logComplete=1
+        checkCount=0
+        while [ "$logComplete" -eq "1" ]; do
+            grep -q "for stderr output of this job." $jobStdout
+            logComplete=$?
+            sleep 1
+            checkCount=$((checkCount+1))
+        done
+        if [ "$logComplete" -ne "0" ]; then
+            die "$jobStdout still seems incomplete, something strange with job $jobId"
+        fi
+
         # If we're tracking the logs, kill the tail processes
 
         if [ "$monitorStyle" = 'std_out_err' ]; then
     
             # Sleep before we kill to allow final outputs to print.
-            sleep 10 
             kill -9 $tail_pid
             wait $pid > /dev/null 2>&1
         fi
@@ -182,10 +209,6 @@ lsf_monitor_job() {
         if [ "$logCleanup" = 'yes' ]; then
             warn "Cleaning up logs $jobStdout, $jobStderr" "$quiet"
             
-            # Sleep for a bit before we delete, otherwise it seems like the
-            # tail we killed above doesn't quite finish reporting 
-           
-            sleep 10 
             rm -rf $jobStdout $jobStderr
         fi
     fi
