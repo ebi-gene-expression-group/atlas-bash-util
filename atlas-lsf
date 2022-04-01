@@ -6,16 +6,19 @@ source $scriptDir/lsf.sh
 
 usageOpts="[ -c <command string> ] \
            [ -w <working directory, default current working directory> ] \
-           [ -m <memory in Mb, defaults to cluster defalt> ] \
-           [ -p <number of cores, defaults to cluster defalt> ] \
+           [ -m <memory in Mb, defaults to cluster default> ] \
+           [ -p <number of cores, defaults to cluster default> ] \
            [ -j <job name, defaults to cluster default> ] \
            [ -g <job group name, defaults to cluster default> ] \
            [ -l <log prefix, no logs written by default> ] \
            [ -e <clean up log files after monitored run? Defaults to no> ] \
-           [ -m <monitor submitted job? Defaults to yes> ] \
+           [ -n <monitor submitted job? Defaults to yes> ] \
+           [ -o <with -l, print standard output content? Defaults to no> ] \
            [ -s <monitor style: 'status' for job status updates on polling, 'std_out_err' to report ongoing content of logs (where used). Defaults to std_out_err> ] \
            [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
-           [ -q <lsf queue, defaults to cluster default ]"
+           [ -q <lsf queue, defaults to cluster default> ] \
+           [ -u <suppress logging output? Default: no> ] \
+           [ -v <name of the conda environment in which to run the job> ]"
 
 usageOpts=$(echo -e "$usageOpts" | tr -s " ")
 usage() { echo "Usage: $0 $usageOpts"; }
@@ -30,13 +33,15 @@ jobName=
 queue=
 jobGroupName=
 logPrefix=
+returnStdout=no
 logCleanup=no
 monitorJob=yes
 pollFreqSecs=10
 monitorStyle=std_out_err
 prioritise=no
+quiet=no
 
-while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:r:" o; do
+while getopts ":c:w:m:p:j:g:l:o:e:n:f:q:s:r:v:u:" o; do
     case "${o}" in
         c)
             commandString=${OPTARG}
@@ -77,6 +82,15 @@ while getopts ":c:w:m:p:j:g:l:e:n:f:q:s:r:" o; do
         r)
             prioritise=${OPTARG}
             ;;
+        o)
+            returnStdout=${OPTARG}
+            ;;
+        v)
+            condaEnv=${OPTARG}
+            ;;
+        u)
+            quiet=${OPTARG}
+            ;;
         *)
             usage
             exit 0
@@ -86,13 +100,13 @@ done
 
 # Submit the jobs
 
-lsfJobId=$(lsf_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix" "$prioritise")
+lsfJobId=$(lsf_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix" "$prioritise" "$condaEnv" "$quiet")
 submitStatus=$?
 
 if [ "$submitStatus" -ne "0" ] && [ -n "$lsfJobId" ]; then
     die "Job submission failed, status is $submitStatus"
 else
-    echo "Job submission succeeded, received job ID $lsfJobId"
+    warn "Job submission succeeded, received job ID $lsfJobId" "$quiet"
     
     if [ "$monitorJob" = 'yes' ]; then
         logFile=
@@ -100,10 +114,11 @@ else
             logFile=${logPrefix}.out
         fi 
 
-        lsf_monitor_job "$lsfJobId" "$pollFreqSecs" "$logFile" "$monitorStyle" "$logCleanup"
+        lsf_monitor_job "$lsfJobId" "$pollFreqSecs" "$logFile" "$monitorStyle" "$logCleanup" "$returnStdout" "$quiet"
+        lsfExitCode=$?
 
-        if [ $? -ne 0 ]; then
-            die "Command \"$commandString\" failed"
+        if [ $lsfExitCode -ne 0 ]; then
+            die "Command \"$commandString\" failed" "$lsfExitCode" "$quiet"
         fi
     fi
 fi
