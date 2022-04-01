@@ -100,7 +100,7 @@ done
 
 # Submit the jobs
 
-lsfJobId=$(lsf_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix" "$prioritise" "$condaEnv")
+lsfJobId=$(lsf_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix" "$prioritise" "$condaEnv" "$quiet")
 submitStatus=$?
 
 if [ "$submitStatus" -ne "0" ] && [ -n "$lsfJobId" ]; then

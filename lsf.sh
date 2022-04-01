@@ -11,7 +11,7 @@ lsf_submit(){
     local logPrefix="$8"
     local prioritise="$9"
     local condaEnv="${10}"
-    local quiet="${11}"
+    local quiet="${11:-'no'}"
 
     # Need at least the command string
 
