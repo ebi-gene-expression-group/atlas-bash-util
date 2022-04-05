@@ -40,7 +40,7 @@ warn (){
 
 die (){
     errMsg=$1
-    errCode=${2:1}
+    errCode=${2:-1}
     quiet=${3:-'no'}
     newline=${4:-'yes'}
 
