@@ -105,8 +105,6 @@ lsf_job_status_from_log() {
     local jobStatus=
     local jobExitCode=-1
     
-    local jobInfo=$(cat $jobStdout | sed -n '/^Sender: LSF/,$p') 
-
     # Sometimes the log files take a few seconds to appear, which can cause
     # problems for the below with very short jobs.
 
@@ -224,7 +222,7 @@ lsf_monitor_job() {
 
         # Checking the status from log has the effect of waiting for it to be
         # complete, which we want before we kill the tail
-        lsfLogStatus=$(lsf_job_status_from_log "$jobStdout" "$quiet")
+        lsfLogStatus=$(lsf_job_status_from_log "$jobStdout" "yes")
 
         # If we're tracking the logs, kill the tail processes
 
