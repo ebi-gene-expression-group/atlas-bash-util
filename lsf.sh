@@ -56,49 +56,106 @@ lsf_submit(){
     fi
 }
 
-# Check lsf status for a job
+# Get status and exit code from job ID
 
-lsf_job_status() {
+lsf_job_status_from_bjobs() {
     local jobId=$1
-    local jobStdout=$2
+    local quiet=${2:-'no'}
 
     check_variables 'jobId'
 
-    local errCode=
-    local jobStatus=$(bjobs -a -o "stat" --job_id $jobId | tail -n +2)
-    local logPath=
+    local jobStatus=
+    local jobExitCode=-1
 
-    if [ -z "$jobStdout" ]; then 
-        jobStdout=$(bjobs -l $jobId)
-    elif [ -f "$jobStdout" ]; then
-        logMsg=", check logs at $jobStdout."    
-        jobStdout="$(cat $jobStdout)"
+    local jobInfo=$(bjobs -a -o "stat exit_code output_file error_file" --job_id $jobId | tail -n +2)
+    
+    if [ -n "$jobInfo" ]; then
+        jobStatus=$(echo -e "$jobInfo" | awk '{print $1}')
+        if [ "$jobStatus" = 'DONE' ]; then
+            jobExitCode=0
+            warn "Successful run for $jobId!" "$quiet"
+        elif [ "$jobStatus" = 'EXIT' ]; then
+            jobExitCode=$(echo -e "$jobInfo" | awk '{print $2}')
+            jobStdout=$(echo -e "$jobInfo" | awk '{print $3}')
+            jobStderr=$(echo -e "$jobInfo" | awk '{print $4}')
+        
+            logMsg=''
+            if [ "$jobStdout" != '-' ]; then
+                logMsg=", check standard out ($jobStdout) and error ($jobStderr) ."
+            fi    
+            warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode${logMsg}" "$quiet"
+        fi
     else
-        jobStdout=
+        die "Could not get job info for $jobID"
+    fi
+    
+    echo -n "$jobStatus"
+    return $jobExitCode
+}
+
+
+# Check lsf status for a job
+
+lsf_job_status_from_log() {
+    local jobStdout=$1
+    local quiet=${2:-'no'} 
+    
+    check_variables 'jobStdout'
+    
+    local jobStatus=
+    local jobExitCode=-1
+    
+    # Sometimes the log files take a few seconds to appear, which can cause
+    # problems for the below with very short jobs.
+
+    # Wait for log file to appear
+
+    local checkCount=0
+    while [ ! -f "$jobStdout" ] && [ $checkCount -lt 60 ]; do
+        sleep 1
+        checkCount=$((checkCount+1))
+    done    
+    if [ ! -f "$jobStdout" ]; then
+        die "$jobStdout still absent, something strange with job $jobId"
     fi
 
-    if [ "$jobStatus" = "DONE" ] || [ "$jobStatus" = "" ]; then
-        echo -e "$jobStdout" | grep -qP '(Done successfully.|Successfully completed)'
-        if [ $? -eq 0 ]; then         
-            warn "Successful run for $jobId!" "$quiet"
-            errCode=0 
-        else
-            warn "Failure for job ${jobId}${logMsg}" "$quiet"
-            errCode=1
+    # Wait for log file to be complete
+
+    local logComplete=1
+    checkCount=0
+    while [ "$logComplete" -eq "1" ]; do
+        grep -q "for stderr output of this job." $jobStdout
+        logComplete=$?
+        sleep 1
+        checkCount=$((checkCount+1))
+    done
+    if [ "$logComplete" -ne "0" ]; then
+        die "$jobStdout still seems incomplete, something strange with job $jobId"
+    fi
+
+    # Now get the info part of the log
+
+    local jobInfo=$(cat $jobStdout | sed -n '/^Sender: LSF/,$p')
+    local jobId=$(echo -e "$jobInfo" | grep -oP "Subject: Job \d+" | sed 's/Subject: Job //')
+
+    echo -e "$jobInfo" | grep -qP '(Done successfully.|Successfully completed)'
+    if [ $? -eq 0 ]; then         
+        warn "Successful run for $jobId!" "$quiet"
+        jobStatus=DONE
+        jobExitCode=0 
+    else
+        warn "Failure for job ${jobId}${logMsg}" "$quiet"
+        jobStatus=EXIT
+        jobExitCode=$(cat $jobStdout| grep -oP "exit code \d+" | sed "s/exit code //")
+        if [ -z "$jobExitCode" ]; then
+            jobExitCode=1
         fi
-    elif [ "$jobStatus" = "EXIT" ]; then
-        warn "Job $jobId had exit status ${jobStatus}${logMsg}" "$quiet"
-        bjobsDashEll=$(bjobs -l $jobId)
-        jobExitCode=$(echo -e "$bjobsDashEll" | grep -oP "exit code \d+" | sed "s/exit code //")
-        if [ -n "$jobExitCode" ]; then
-            errCode=$jobExitCode
-        else
-            errCode=1
-        fi
+
+        warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode, check standard out $jobStdout" "$quiet"
     fi
 
     echo -n "$jobStatus"
-    return $errCode
+    return $jobExitCode
 }
 
 # Monitor running of a particular job
@@ -133,10 +190,10 @@ lsf_monitor_job() {
         monitorStyle='status'
     fi
 
-    # Now submit the job and start status checking
+    # Now  start status checking
 
     local lsfJobStatus
-    lsfJobStatus=$(lsf_job_status "$jobId" "$jobStdout")
+    lsfJobStatus=$(lsf_job_status_from_bjobs "$jobId" "$quiet")
     lsfExitCode=$?
     local lastStatus=$lsfJobStatus
     
@@ -147,7 +204,7 @@ lsf_monitor_job() {
         if [ "$monitorStyle" = 'status' ]; then warn '.' "$quiet" 'no'; fi
         
         sleep $pollSecs
-        lsfJobStatus=$(lsf_job_status "$jobId" "$jobStdout")
+        lsfJobStatus=$(lsf_job_status_from_bjobs "$jobId" "$quiet")
         lsfExitCode=$?
         if [ "$lsfJobStatus" != "$lastStatus" ]; then
 
@@ -162,34 +219,10 @@ lsf_monitor_job() {
     # If we've beein tailing job output, then kill it
 
     if [ -n "$jobStdout" ];then
-    
-        # Sometimes the log files take a few seconds to appear, which can cause
-        # problems for the below with very short jobs.
 
-        # Wait for log file to appear
-
-        local checkCount=0
-        while [ ! -f "$jobStdout" ] && [ $checkCount -lt 60 ]; do
-            sleep 1
-            checkCount=$((checkCount+1))
-        done    
-        if [ ! -f "$jobStdout" ]; then
-            die "$jobStdout still absent, something strange with job $jobId"
-        fi
-   
-        # Wait for log file to be complete
-
-        local logComplete=1
-        checkCount=0
-        while [ "$logComplete" -eq "1" ]; do
-            grep -q "for stderr output of this job." $jobStdout
-            logComplete=$?
-            sleep 1
-            checkCount=$((checkCount+1))
-        done
-        if [ "$logComplete" -ne "0" ]; then
-            die "$jobStdout still seems incomplete, something strange with job $jobId"
-        fi
+        # Checking the status from log has the effect of waiting for it to be
+        # complete, which we want before we kill the tail
+        lsfLogStatus=$(lsf_job_status_from_log "$jobStdout" "yes")
 
         # If we're tracking the logs, kill the tail processes
 
