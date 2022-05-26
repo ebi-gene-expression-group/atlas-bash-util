@@ -9,13 +9,6 @@ scriptDir=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $scriptDir/generic_routines.sh
 projectRoot=${scriptDir}/..
 
-#This is the fastest but is only possible if the condensed sdrf has been already written out
-#We only condense the sdrf after successful analysis, and analysis needs organism name in e.g. GSEA, so we can't always use this
-#This assumes the organism field there is unique (it fetches the first one that appears otherwise)
-get_organism_from_condensed_sdrf(){
-    cut -f 4,5,6 $1 | grep characteristic$'\t'organism$'\t' | head -n1 | cut -f 3 | to_ensembl_species_lowercase
-}
-
 # Call a Perl script that models AE import
 # Gets the idf file from magetab, reads the location of the corresponding sdrf, parses whole sdrf
 # This takes a long time and for already imported experiments isn't really needed
