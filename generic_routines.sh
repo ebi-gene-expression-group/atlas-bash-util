@@ -70,13 +70,6 @@ send_report() {
     rm -rf ${log}.out ${log}.err ${log}.report
 }
 
-# Returns prod or test, depending on the Atlas environment in which the script calling it is running
-# It is assuming that all atlasinstall_<env>s are under ${ATLAS_PROD}/sw (it will fail otherwise)
-atlas_env() {
-    scriptDir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-    atlasInstallSubDir=$(echo $scriptDir | awk -F"/" '{print $8}')
-    echo $atlasInstallSubDir | awk -F"_" '{print $2}'
-}
 
 # This procedure returns 0 if process $arg is running; otherwise it returns 1
 lsf_process_running() {
@@ -188,7 +181,7 @@ applyFixes() {
     exp=$1
     fixesFilePath=$2
     fileTypeToBeFixed=$3
-    atlasEnv=$(atlas_env)
+    atlasEnv='prod'
 
     echo 
 
