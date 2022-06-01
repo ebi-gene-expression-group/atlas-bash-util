@@ -180,13 +180,12 @@ move_ena_experiments_to_isl_studies() {
 # Applies fixes encoded in $fixesFile to $exp.$fileTypeToBeFixed.txt
 applyFixes() {
 	exp=$1
-	fixesFile=$2
+	fixesFilePath=$2
 	fileTypeToBeFixed=$3
-	fixesFilePath=$4
 
 	echo "NOTE: Fix will not be applied in lines of $fixesFile that miss a tab character"
 	# Apply factor type fixes in ${fileTypeToBeFixed} file
-	for l in $(cat $fixesFilePath/$fixesFile | sed 's|[[:space:]]*$||g') ; do
+	for l in $(cat $fixesFilePath | sed 's|[[:space:]]*$||g') ; do
 		if [ ! -s "$exp/$exp.${fileTypeToBeFixed}" ]; then
 			warn "ERROR: $exp/$exp.${fileTypeToBeFixed} not found or is empty"
 			return 1
@@ -198,7 +197,7 @@ applyFixes() {
 		correct=$(echo $l | awk -F"\t" '{print $1}')
 		toBeReplaced=$(echo $l | awk -F"\t" '{print $2}' | sed 's/[^-A-Za-z0-9_ ]/\\\&/g')
 
-		if [ "$fixesFile" == "automatic_fixes_properties.txt" ]; then
+		if [ "$(basename $fixesFilePath)" == "automatic_fixes_properties.txt" ]; then
 			# in sdrf or condensed-sdrv fix factor/characteristic types only
 			if [ "$fileTypeToBeFixed" == "condensed-sdrf.tsv" ]; then
 				# In condensed-sdrf, the factor/characteristic type is the penultimate column - so tabs on both sides
@@ -208,7 +207,7 @@ applyFixes() {
 				perl -pi -e "s|\t${toBeReplaced}\t|\t${correct}\t|g" $exp/$exp.${fileTypeToBeFixed}
 				perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
 			fi
-		elif [ "$fixesFile" == "automatic_fixes_values.txt" ]; then
+		elif [ "$(basename $fixesFilePath)" == "automatic_fixes_values.txt" ]; then
 			if [ "$fileTypeToBeFixed" == "condensed-sdrf.tsv" ]; then
 				# In condensed-sdrf, the factor/characteristic value is the last column - so tab on the left and line ending on the right
 				perl -pi -e "s|\t${toBeReplaced}$|\t${correct}|g" $exp/$exp.${fileTypeToBeFixed}
@@ -219,23 +218,23 @@ applyFixes() {
 
 applyAllFixesForExperiment() {
 	exp=$1
-	fixesfilepath=$2
+	fixesFileDir=$2
 	echo "Applying fixes for $exp ..."
 	# Apply factor type fixes in idf file
-	applyFixes $exp automatic_fixes_properties.txt idf.txt $fixesfilepath
+	applyFixes $exp $fixesFileDir/automatic_fixes_properties.txt idf.txt
 	if [ $? -ne 0 ]; then
 		warn "ERROR: Applying factor type fixes in idf file for $exp failed"
 		return 1
 	fi
 
 	# Apply factor/sample characteristic type fixes to the condensed-sdrf file
-	applyFixes $exp automatic_fixes_properties.txt condensed-sdrf.tsv $fixesfilepath
+	applyFixes $exp $fixesFileDir/automatic_fixes_properties.txt condensed-sdrf.tsv
 	if [ $? -ne 0 ]; then
 		echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
 		return 1
 	fi
 	# Apply sample characteristic/factor value fixes to the condensed-sdrf file
-	applyFixes $exp automatic_fixes_values.txt condensed-sdrf.tsv $fixesfilepath
+	applyFixes $exp $fixesFileDir/automatic_fixes_values.txt condensed-sdrf.tsv
     if [ $? -ne 0 ]; then
 		echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
 		return 1
