@@ -185,7 +185,7 @@ applyFixes() {
 
     echo "NOTE: Fix will not be applied in lines of $fixesFile that miss a tab character"
     # Apply factor type fixes in ${fileTypeToBeFixed} file
-    for l in $(cat $fixesFilePath | sed 's|[[:space:]]*$||g') ; do
+    for l in $(cat $fixesFilePath | sed 's|[[:space:]]*$||g'); do
         if [ ! -s "$exp/$exp.${fileTypeToBeFixed}" ]; then
             warn "ERROR: $exp/$exp.${fileTypeToBeFixed} not found or is empty"
             return 1
