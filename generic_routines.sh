@@ -235,7 +235,7 @@ applyAllFixesForExperiment() {
 	fi
 	# Apply sample characteristic/factor value fixes to the condensed-sdrf file
 	applyFixes $exp $fixesFileDir/automatic_fixes_values.txt condensed-sdrf.tsv
-    if [ $? -ne 0 ]; then
+    	if [ $? -ne 0 ]; then
 		echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
 		return 1
 	fi
