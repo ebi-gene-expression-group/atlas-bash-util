@@ -70,13 +70,6 @@ send_report() {
     rm -rf ${log}.out ${log}.err ${log}.report
 }
 
-# Returns prod or test, depending on the Atlas environment in which the script calling it is running
-# It is assuming that all atlasinstall_<env>s are under ${ATLAS_PROD}/sw (it will fail otherwise)
-atlas_env() {
-    scriptDir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-    atlasInstallSubDir=$(echo $scriptDir | awk -F"/" '{print $8}')
-    echo $atlasInstallSubDir | awk -F"_" '{print $2}'
-}
 
 # This procedure returns 0 if process $arg is running; otherwise it returns 1
 lsf_process_running() {
@@ -183,17 +176,16 @@ move_ena_experiments_to_isl_studies() {
     fi
 }
 
+
 # Applies fixes encoded in $fixesFile to $exp.$fileTypeToBeFixed.txt
 applyFixes() {
     exp=$1
     fixesFilePath=$2
     fileTypeToBeFixed=$3
-    atlasEnv=$(atlas_env)
 
-    echo 
-
+    echo "NOTE: Fix will not be applied in lines of $fixesFile that miss a tab character"
     # Apply factor type fixes in ${fileTypeToBeFixed} file
-    for l in $($cat fixesFilePath | sed 's|[[:space:]]*$||g'); do
+    for l in $(cat $fixesFilePath | sed 's|[[:space:]]*$||g'); do
         if [ ! -s "$exp/$exp.${fileTypeToBeFixed}" ]; then
             warn "ERROR: $exp/$exp.${fileTypeToBeFixed} not found or is empty"
             return 1
@@ -226,25 +218,28 @@ applyFixes() {
 
 applyAllFixesForExperiment() {
     exp=$1
+    fixesFileDir=$2
     echo "Applying fixes for $exp ..."
     # Apply factor type fixes in idf file
-    applyFixes $exp automatic_fixes_properties.txt idf.txt
+    applyFixes $exp $fixesFileDir/automatic_fixes_properties.txt idf.txt
     if [ $? -ne 0 ]; then
         warn "ERROR: Applying factor type fixes in idf file for $exp failed"
+        return 1
     fi
 
     # Apply factor/sample characteristic type fixes to the condensed-sdrf file
-    applyFixes $exp automatic_fixes_properties.txt condensed-sdrf.tsv
+    applyFixes $exp $fixesFileDir/automatic_fixes_properties.txt condensed-sdrf.tsv
     if [ $? -ne 0 ]; then
         echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
         return 1
     fi
     # Apply sample characteristic/factor value fixes to the condensed-sdrf file
-    applyFixes $exp automatic_fixes_values.txt condensed-sdrf.tsv
+    applyFixes $exp $fixesFileDir/automatic_fixes_values.txt condensed-sdrf.tsv
     if [ $? -ne 0 ]; then
         echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
         return 1
     fi
+    echo "applyAllFixesForExperiment...done"
 }
 
 # Restriction to run prod scripts as the prod user only
