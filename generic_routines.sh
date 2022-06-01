@@ -182,11 +182,11 @@ applyFixes() {
     exp=$1
     fixesFile=$2
     fileTypeToBeFixed=$3
-    atlasEnv='prod'
-
+    fixesFilePath=$4
+    
     echo "NOTE: Fix will not be applied in lines of $fixesFile that miss a tab character"
     # Apply factor type fixes in ${fileTypeToBeFixed} file
-    for l in $(cat $ATLAS_PROD/sw/atlasinstall_${atlasEnv}/atlasprod/experiment_metadata/$fixesFile | sed 's|[[:space:]]*$||g') ; do
+    for l in $(cat $fixesFilePath/$fixesFile | sed 's|[[:space:]]*$||g') ; do
 	    if [ ! -s "$exp/$exp.${fileTypeToBeFixed}" ]; then
 	        warn "ERROR: $exp/$exp.${fileTypeToBeFixed} not found or is empty"
 	        return 1
@@ -219,22 +219,23 @@ applyFixes() {
 
 applyAllFixesForExperiment() {
     exp=$1
+    fixesfilepath=$2
     echo "Applying fixes for $exp ..."
     # Apply factor type fixes in idf file
-    applyFixes $exp automatic_fixes_properties.txt idf.txt
+    applyFixes $exp automatic_fixes_properties.txt idf.txt $fixesfilepath
     if [ $? -ne 0 ]; then
 	    warn "ERROR: Applying factor type fixes in idf file for $exp failed"
 	    return 1
     fi
 
     # Apply factor/sample characteristic type fixes to the condensed-sdrf file
-    applyFixes $exp automatic_fixes_properties.txt condensed-sdrf.tsv
+    applyFixes $exp automatic_fixes_properties.txt condensed-sdrf.tsv $fixesfilepath
     if [ $? -ne 0 ]; then
 	    echo "ERROR: Applying sample characteristic/factor types fixes in sdrf file for $exp failed" >&2
 	    return 1
     fi
     # Apply sample characteristic/factor value fixes to the condensed-sdrf file
-    applyFixes $exp automatic_fixes_values.txt condensed-sdrf.tsv
+    applyFixes $exp automatic_fixes_values.txt condensed-sdrf.tsv $fixesfilepath
     if [ $? -ne 0 ]; then
 	    echo "ERROR: Applying sample characteristic/factor value fixes in sdrf file for $exp failed" >&2
 	    return 1
