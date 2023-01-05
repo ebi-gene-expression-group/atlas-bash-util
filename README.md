@@ -1,4 +1,4 @@
-# Bash utilities used by Expression Atlas [![Anaconda-Server Badge](https://anaconda.org/ebi-gene-expression-group/atlas-bash-util/badges/installer/conda.svg)](https://anaconda.org/ebi-gene-expression-group/atlas-bash-util)
+# Bash utilities used by Expression Atlas [![Anaconda-Server Badge](https://anaconda.org/ebi-gene-expression-group/atlas-bash-util/badges/version.svg)](https://anaconda.org/ebi-gene-expression-group/atlas-bash-util)
 
 This is a module factored out of legacy code to provide common bash utilities to Atlas scripts. 
 
