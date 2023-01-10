@@ -3,7 +3,7 @@
 IFS="
 "
 
-PEACH_API_URI=${PEACH_API_URI:'http://peach.ebi.ac.uk:8480/api'}
+PEACH_API_URI=${PEACH_API_URI:-'http://peach.ebi.ac.uk:8480/api'}
 
 # Check that a given variable is defined
 
