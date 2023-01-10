@@ -104,7 +104,7 @@ peach_api_privacy_status() {
     #fi
     #
     #echo $privacyStatus
-    echo " peach_api_privacy_status function is deprecated "
+    echo "Privacy status can no longer be obtained via the Peach API"
 }
 
 peach_api_release_date() {
@@ -125,7 +125,7 @@ peach_api_release_date() {
     #fi
     #
     #echo $releaseDate
-    echo " peach_api_release_date function is deprecated "
+    echo "Release date information can no longer be obtained from the Peach API."
 }
 
 enad_experiment() {
