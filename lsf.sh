@@ -29,9 +29,12 @@ lsf_submit(){
     if [ -n "$workingDir" ]; then workingDir=" -cwd \"$workingDir\""; fi
     if [ -n "$condaEnv" ]; then
         condaBase=$(conda info --json | awk '/conda_prefix/ { gsub(/"|,/, "", $2); print $2 }')
+        #condaCmd=". ${condaBase}/bin/activate ${condaBase}/envs/${condaEnv}"
+        ###### the lines below were added to enable the activation of a conda env that is not inside the base conda env directory
         condaEnvPath="${condaBase}/envs/${condaEnv}"
         if [ -d "$condaEnv" ]; then condaEnvPath="$condaEnv"; fi
         condaCmd=". ${condaBase}/bin/activate ${condaEnvPath}"
+        ######
         commandString="${condaCmd} && ${commandString}"
     fi
     if [ -n "$logPrefix" ]; then 

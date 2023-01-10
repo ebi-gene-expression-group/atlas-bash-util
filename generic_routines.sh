@@ -3,7 +3,8 @@
 IFS="
 "
 
-PEACH_API_URI=${PEACH_API_URI:'http://peach.ebi.ac.uk:8480/api'}
+# deprecated by biostudies
+#PEACH_API_URI=${PEACH_API_URI:-'http://peach.ebi.ac.uk:8480/api'}
 
 # Check that a given variable is defined
 
@@ -89,40 +90,42 @@ function capitalize_first_letter {
 ## -GEOD-/-ERAD-/-ENAD- are loaded as public from now on
 peach_api_privacy_status() {
     expAcc=$1
-    exp_import=$(echo $expAcc | awk -F"-" '{print $2}')
-
-    if [ $exp_import == "MTAB" ]; then
-        response=$(curl -s "${PEACH_API_URI}/privacy.txt?acc=$expAcc")
-        if [ -z "$response" ]; then
-            die "WARNING: Got empty response from ${PEACH_API_URI}/privacy.txt?acc=$expAcc" 0
-        fi
-        privacyStatus=$(echo $response | awk '{print $2}' | awk -F":" '{print $2}')
-        ## if not MTAB, ie. GEOD or ENAD or ERAD are all loaded as public
-    else
-        privacyStatus=$(echo "public")
-    fi
-
-    echo $privacyStatus
+    #exp_import=$(echo $expAcc | awk -F"-" '{print $2}')
+    #
+    #if [ $exp_import == "MTAB" ]; then
+    #    response=$(curl -s "${PEACH_API_URI}/privacy.txt?acc=$expAcc")
+    #    if [ -z "$response" ]; then
+    #        die "WARNING: Got empty response from ${PEACH_API_URI}/privacy.txt?acc=$expAcc" 0
+    #    fi
+    #    privacyStatus=$(echo $response | awk '{print $2}' | awk -F":" '{print $2}')
+    #    ## if not MTAB, ie. GEOD or ENAD or ERAD are all loaded as public
+    #else
+    #    privacyStatus=$(echo "public")
+    #fi
+    #
+    #echo $privacyStatus
+    echo "Privacy status can no longer be obtained via the Peach API"
 }
 
 peach_api_release_date() {
     expAcc=$1
-    exp_import=$(echo $expAcc | awk -F"-" '{print $2}')
-
-    if [ $exp_import == "MTAB" ]; then
-        response=$(curl -s "$PEACH_API_URI/privacy.txt?acc=$expAcc")
-        if [ -z "$response" ]; then
-            die "WARNING: Got empty response from ${PEACH_API_URI}/privacy.txt?acc=$expAcc" 0
-        fi
-        releaseDate=$(echo $response | awk '{print $3}' | awk -F":" '{print $2}')
-
-    ## if not MTAB, ie. GEOD or ENAD or ERAD are all loaded as of today, considering its public and have release date
-    ## not less than 2 days
-    else
-        releaseDate="$(date --date="2 days ago" +%Y-%m-%d)"
-    fi
-
-    echo $releaseDate
+    #exp_import=$(echo $expAcc | awk -F"-" '{print $2}')
+    #
+    #if [ $exp_import == "MTAB" ]; then
+    #    response=$(curl -s "$PEACH_API_URI/privacy.txt?acc=$expAcc")
+    #    if [ -z "$response" ]; then
+    #        die "WARNING: Got empty response from ${PEACH_API_URI}/privacy.txt?acc=$expAcc" 0
+    #    fi
+    #    releaseDate=$(echo $response | awk '{print $3}' | awk -F":" '{print $2}')
+    #
+    ### if not MTAB, ie. GEOD or ENAD or ERAD are all loaded as of today, considering its public and have release date
+    ### not less than 2 days
+    #else
+    #    releaseDate="$(date --date="2 days ago" +%Y-%m-%d)"
+    #fi
+    #
+    #echo $releaseDate
+    echo "Release date information can no longer be obtained from the Peach API."
 }
 
 enad_experiment() {
