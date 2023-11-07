@@ -60,3 +60,43 @@ slurm_submit(){
         echo $jobId
     fi
 }
+
+
+# Get status and exit code from job ID
+
+slurm_job_status_from_sbatch() {
+    local jobId=$1
+    local quiet=${2:-'no'}
+
+    check_variables 'jobId'
+
+    local jobStatus=
+    local jobExitCode=-1
+
+    local jobInfo=$(sacct -j $jobId --format=State,ExitCode,StdOut,StdErr --noheader)
+
+    bjobs -a -o "stat exit_code output_file error_file" --job_id $jobId | tail -n +2
+    
+    if [ -n "$jobInfo" ]; then
+        jobStatus=$(echo -e "$jobInfo" | awk '{print $1}')
+        if [ "$jobStatus" = 'DONE' ]; then
+            jobExitCode=0
+            warn "Successful run for $jobId!" "$quiet"
+        elif [ "$jobStatus" = 'EXIT' ]; then
+            jobExitCode=$(echo -e "$jobInfo" | awk '{print $2}')
+            jobStdout=$(echo -e "$jobInfo" | awk '{print $3}')
+            jobStderr=$(echo -e "$jobInfo" | awk '{print $4}')
+        
+            logMsg=''
+            if [ "$jobStdout" != '-' ]; then
+                logMsg=", check standard out ($jobStdout) and error ($jobStderr) ."
+            fi    
+            warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode${logMsg}" "$quiet"
+        fi
+    else
+        die "Could not get job info for $jobID"
+    fi
+    
+    echo -n "$jobStatus"
+    return $jobExitCode
+}
