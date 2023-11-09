@@ -52,11 +52,12 @@ slurm_submit(){
     if [ $? -ne 0 ]; then
         die "Job submission failed"
     else
-        local jobId=$(echo $sbatchOutput | head -n1 | cut -d'<' -f2 | cut -d'>' -f1)
-        if [ "$prioritise" = 'yes' ]; then
-            warn "Prioritising $jobId" "$quiet"
-            btop $jobId
-        fi
+        local jobId=$(echo $sbatchOutput | grep -oE 'Submitted batch job [0-9]+')
+        job_id=${job_id##* }
+        # if [ "$prioritise" = 'yes' ]; then
+        #     warn "Prioritising $jobId" "$quiet"
+        #     btop $jobId
+        # fi
         echo $jobId
     fi
 }
