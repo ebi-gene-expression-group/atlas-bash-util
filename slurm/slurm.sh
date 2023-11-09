@@ -64,7 +64,7 @@ slurm_submit(){
 
 # Get status and exit code from job ID
 
-slurm_job_status_from_sbatch() {
+slurm_job_status_from_sacct() {
     local jobId=$1
     local quiet=${2:-'no'}
 
@@ -73,25 +73,44 @@ slurm_job_status_from_sbatch() {
     local jobStatus=
     local jobExitCode=-1
 
-    local jobInfo=$(sacct -j $jobId --format=State,ExitCode,StdOut,StdErr --noheader)
+    local jobInfo=$(sacct -j $jobId --format=jobid,state,exitCode,reason --noheader | grep -vE '\.ba\+|\.ex\+') #ignores .ba and .ex entries
 
-    bjobs -a -o "stat exit_code output_file error_file" --job_id $jobId | tail -n +2
     
     if [ -n "$jobInfo" ]; then
-        jobStatus=$(echo -e "$jobInfo" | awk '{print $1}')
-        if [ "$jobStatus" = 'DONE' ]; then
+        jobStatus=$(echo -e "$jobInfo" | awk '{print $2}')
+        if [ "$jobStatus" = 'RUNNING' ]; then
+            jobExitCode=0
+            warn "$jobId is still running" "$quiet"
+        elif [ "$jobStatus" = 'COMPLETED' ]; then
             jobExitCode=0
             warn "Successful run for $jobId!" "$quiet"
-        elif [ "$jobStatus" = 'EXIT' ]; then
-            jobExitCode=$(echo -e "$jobInfo" | awk '{print $2}')
-            jobStdout=$(echo -e "$jobInfo" | awk '{print $3}')
-            jobStderr=$(echo -e "$jobInfo" | awk '{print $4}')
+        elif [ "$jobStatus" = 'FAILED' ]; then
+            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}')
+            jobReason=$(echo -e "$jobInfo" | awk '{print $4}')
         
-            logMsg=''
-            if [ "$jobStdout" != '-' ]; then
-                logMsg=", check standard out ($jobStdout) and error ($jobStderr) ."
-            fi    
-            warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode${logMsg}" "$quiet"
+            # logMsg=''
+            # if [ "$jobStdout" != '-' ]; then
+            #     logMsg=", check standard out ($jobStdout) and error ($jobStderr) ."
+            # fi    
+            warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode and reason $jobReason" "$quiet"
+        elif [ "$jobStatus" = 'TIMEOUT' ]; then
+            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}')
+            jobReason="TIME OUT"
+        
+            # logMsg=''
+            # if [ "$jobStdout" != '-' ]; then
+            #     logMsg=", check standard out ($jobStdout) and error ($jobStderr) ."
+            # fi    
+            warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode and reason $jobReason" "$quiet"
+        elif [ "$jobStatus" = 'NODE_FAIL' ]; then
+            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}')
+            jobReason="NODE_FAIL"
+        
+            # logMsg=''
+            # if [ "$jobStdout" != '-' ]; then
+            #     logMsg=", check standard out ($jobStdout) and error ($jobStderr) ."
+            # fi    
+            warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode and reason $jobReason" "$quiet"
         fi
     else
         die "Could not get job info for $jobID"
