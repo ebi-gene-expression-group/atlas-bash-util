@@ -42,7 +42,7 @@ slurm_submit(){
         logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""
     fi
 
-    local sbatch_cmd=$(echo -e "sbatch $jobQueue $jobName $slurmMem $nThreads $jobGroupName $workingDir $logPrefix \"$commandString\"" | tr -s " ")
+    local sbatch_cmd=$(echo -e "sbatch $jobQueue $jobName $slurmMem $nThreads $jobGroupName $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
 
     local sbatchOutput=
     sbatchOutput=$(eval $sbatch_cmd)
