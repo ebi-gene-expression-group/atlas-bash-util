@@ -41,8 +41,8 @@ slurm_submit(){
         mkdir -p $(dirname $logPrefix)
         logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""
     fi
-
-    local sbatch_cmd=$(echo -e "sbatch $jobQueue $jobName $slurmMem $nThreads $jobGroupName $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
+    maxTime=$(slurm_maxtime_for_partition "production")
+    local sbatch_cmd=$(echo -e "sbatch -t $maxTime $jobQueue $jobName $slurmMem $nThreads $jobGroupName $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
 
     local sbatchOutput=
     sbatchOutput=$(eval $sbatch_cmd)
@@ -62,7 +62,26 @@ slurm_submit(){
     fi
 }
 
+# Get MaxTime for the partition/queue
 
+slurm_maxtime_for_partition(){
+    partition_name=$1
+    partition_info=$(scontrol show partition "$partition_name" 2>/dev/null)
+
+    if [ -z "$partition_info" ]; then
+        echo "Partition not found or permission denied."
+        return 1
+    fi
+
+    max_time=$(echo "$partition_info" | awk -F' ' '{for(i=1;i<=NF;i++) if($i ~ /^MaxTime=/) {split($i, a, "="); print a[2]}}')
+    
+    if [ -z "$max_time" ]; then
+        echo "MaxTime not found for partition $partition_name."
+        return 1
+    fi
+
+    echo "$max_time"
+}
 # Get status and exit code from job ID
 
 slurm_job_status_from_sacct() {
