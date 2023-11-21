@@ -108,16 +108,17 @@ if [ "$submitStatus" -ne "0" ] && [ -n "$slurmJobId" ]; then
 else
     warn "Job submission succeeded, received job ID $slurmJobId" "$quiet"
     
-#    if [ "$monitorJob" = 'yes' ]; then
-#        logFile=
-#        if [ -n "$logPrefix" ]; then
-#            logFile=${logPrefix}.out
-#        fi 
-#        slurm_monitor_job "$slurmJobId" "$pollFreqSecs" "$logFile" "$monitorStyle" "$logCleanup" "$returnStdout" "$quiet"
-#        slurmExitCode=$?
-#
-#        if [ $slurmExitCode -ne 0 ]; then
-#            die "Command \"$commandString\" failed" "$slurmExitCode" "$quiet"
-#        fi
-#    fi
+    if [ "$monitorJob" = 'yes' ]; then
+        logFile=
+        if [ -n "$logPrefix" ]; then
+            logFile=${logPrefix}.out
+        fi 
+	sleep 10
+	slurm_monitor_job "$slurmJobId" "$pollFreqSecs" "$logFile" "$monitorStyle" "$logCleanup" "$returnStdout" "$quiet"
+        slurmExitCode=$?
+
+        if [ $slurmExitCode -ne 0 ]; then
+            die "Command \"$commandString\" failed" "$slurmExitCode" "$quiet"
+        fi
+    fi
 fi
