@@ -99,7 +99,11 @@ while getopts ":c:w:m:p:j:g:l:o:e:n:f:q:s:r:v:u:" o; do
 done
 
 # Submit the jobs
-
+# if [ -n "${workingDir}/${logPrefix}.out" ]; then
+#         jobStdout="${workingDir}/${logPrefix}.out"
+#         jobStderr="${workingDir}/${logPrefix}.err"
+#         rm -rf $jobStdout $jobStderr
+#     fi
 slurmJobId=$(slurm_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$jobGroupName" "$workingDir" "$logPrefix" "$prioritise" "$condaEnv" "$quiet")
 submitStatus=$?
 
@@ -114,7 +118,7 @@ else
             logFile=${logPrefix}.out
         fi 
 	sleep 10
-	slurm_monitor_job "$slurmJobId" "$pollFreqSecs" "$logFile" "$monitorStyle" "$logCleanup" "$returnStdout" "$quiet"
+	slurm_monitor_job "$slurmJobId" "$pollFreqSecs" "${workingDir}/${logFile}" "$monitorStyle" "$logCleanup" "$returnStdout" "$quiet"
         slurmExitCode=$?
 
         if [ $slurmExitCode -ne 0 ]; then
