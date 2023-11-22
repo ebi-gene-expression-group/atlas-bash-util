@@ -62,8 +62,7 @@ slurm_submit(){
     fi
 }
 
-
-# EGT MaxTime for the partition/queue
+# Get MaxTime for the partition/queue
 
 slurm_maxtime_for_partition(){
     partition_name=$1
@@ -83,7 +82,6 @@ slurm_maxtime_for_partition(){
 
     echo "$max_time"
 }
-
 # Get status and exit code from job ID
 
 slurm_job_status_from_sacct() {
@@ -95,12 +93,12 @@ slurm_job_status_from_sacct() {
     local jobStatus=
     local jobExitCode=-1
 
-    jobInfo="$(sacct -j $jobId --format=jobid,state,exitCode,reason --noheader | grep -vE '\.ba\+|\.ex\+' -m 1)"
+    local jobInfo="$(sacct -j $jobId --format=jobid,state,exitCode,reason --noheader | grep -vE '\.ba\+|\.ex\+' -m 1)" #ignores .ba and .ex entries
 
+    
     if [ -n "$jobInfo" ]; then
         jobStatus=$(echo -e "$jobInfo" | awk '{print $2}')
-
-    if [ "$jobStatus" = 'RUNNING' ]; then
+        if [ "$jobStatus" = 'RUNNING' ]; then
             jobExitCode=0
             warn "$jobId is still running" "$quiet"
         elif [ "$jobStatus" = 'COMPLETED' ]; then
@@ -144,67 +142,73 @@ slurm_job_status_from_sacct() {
 
 # Check slurm status for a job
 
-slurm_job_status_from_log() {
+slurm_completed_job_status_from_sacct() {
 
     local jobStdout=$1
-    local quiet=${2:-'no'}
-    
+    jobStderr=$(echo -e "$jobStdout" | sed s/.out$/.err/)
+    local jobId=$2
+    local quiet=${3:-'no'} 
+
     check_variables 'jobStdout'
 
     local jobStatus=
     local jobExitCode=-1
-    
+
+    # Sometimes the log files take a few seconds to appear, which can cause
+    # problems for the below with very short jobs.
+
+    # Wait for log file to appear
+
     local checkCount=0
-    
-    warn "Warning $jobStdout $quiet"
-    
     while [ ! -f "$jobStdout" ] && [ $checkCount -lt 60 ]; do
         sleep 1
         checkCount=$((checkCount+1))
-    done
-    
+    done    
+
     if [ ! -f "$jobStdout" ]; then
         die "$jobStdout still absent, something strange with job $jobId"
     fi
     
+    # Wait for log file to be complete
+
     local logComplete=1
     checkCount=0
-    
-    while [ "$logComplete" -eq "1" ]; do
-        grep -q "for stderr output of this job." $jobStdout
-        logComplete=$?
-        sleep 1
-        checkCount=$((checkCount+1))
-    done
-    
-    if [ "$logComplete" -ne "0" ]; then
-        die "$jobStdout still seems incomplete, something strange with job $jobId"
-    fi
-    
+
+    # while [ "$logComplete" -eq "1" ]; do
+    #     grep -q "for stderr output of this job." $jobStdout
+    #     logComplete=$?
+    #     sleep 1
+    #     checkCount=$((checkCount+1))
+    # done
+
+    # if [ "$logComplete" -ne "0" ]; then
+    #     die "$jobStdout still seems incomplete, something strange with job $jobId"
+    # fi
+
     # Now get the info part of the log
 
-    local jobInfo=$(cat $jobStdout | sed -n '/^Sender: slurm/,$p')
-    local jobId=$(echo -e "$jobInfo" | grep -oP "Subject: Job \d+" | sed 's/Subject: Job //')
 
-    echo -e "$jobInfo" | grep -qP '(Done successfully.|Successfully completed)'
-    if [ $? -eq 0 ]; then
+    local jobInfo="$(sacct -j $jobId --format=jobid,state,exitCode,reason --noheader | grep -vE '\.ba\+|\.ex\+' -m 1)" #ignores .ba and .ex entries
+    local jobStatus=$(echo -e "$jobInfo" | awk '{print $2}')
+    
+    if [ "$jobStatus" = 'COMPLETED' ]; then
         warn "Successful run for $jobId!" "$quiet"
         jobStatus=DONE
-        jobExitCode=0
-    else
+        jobExitCode=0 
+    elif [ "$jobStatus" = 'FAILED' ]; then
+        jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f2)
         warn "Failure for job ${jobId}${logMsg}" "$quiet"
         jobStatus=EXIT
-        jobExitCode=$(cat $jobStdout| grep -oP "exit code \d+" | sed "s/exit code //")
         if [ -z "$jobExitCode" ]; then
             jobExitCode=1
         fi
 
-        warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode, check standard out $jobStdout" "$quiet"
+        warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode, check standard out $jobStdout and for error message check $jobStderr" "$quiet"
+        
     fi
 
     echo -n "$jobStatus"
     return $jobExitCode
-    
 }
 
 slurm_monitor_job() {
@@ -217,16 +221,16 @@ slurm_monitor_job() {
     local returnStdout=${6:-'no'}
     local quiet=${7:-'no'}
 
-
     warn "Monitor style: $monitorStyle" "$quiet"
 
     # Delete any prior logs
-    if [ -n "$jobStdout" ]; then
-        jobStderr=$(echo -e "$jobStdout" | sed s/.out$/.err/)
-        rm -rf $jobStdout $jobStderr
-    fi
-    # If a log file is provided and viewLogOutput is 'yes', then start tailing the files
+    # if [ -n "$jobStdout" ]; then
+    #     warn "here if $jobStdout"
+          jobStderr=$(echo -e "$jobStdout" | sed s/.out$/.err/)
+    #     rm -rf $jobStdout $jobStderr
+    # fi
 
+    # If a log file is provided and viewLogOutput is 'yes', then start tailing the files
     local tail_pid=
     if [ -n "$jobStdout" ] && [ "$monitorStyle" = 'std_out_err' ]; then
         touch $jobStderr $jobStdout
@@ -235,22 +239,23 @@ slurm_monitor_job() {
     else
         monitorStyle='status'
     fi
+
     # Now  start status checking
 
     local slurmJobStatus
     slurmJobStatus=$(slurm_job_status_from_sacct "$jobId" "$quiet")
     slurmExitCode=$?
     local lastStatus=$slurmJobStatus
-    
+
     if [ "$monitorStyle" = 'status' ]; then warn "Starting status is ${slurmJobStatus}" "$quiet" 'no'; fi
 
     while [ "$slurmJobStatus" = 'PENDING' ] || [ "$slurmJobStatus" = 'RUNNING' ]; do
+
         if [ "$monitorStyle" = 'status' ]; then warn '.' "$quiet" 'no'; fi
 
         sleep $pollSecs
         slurmJobStatus=$(slurm_job_status_from_sacct "$jobId" "$quiet")
         slurmExitCode=$?
-
         if [ "$slurmJobStatus" != "$lastStatus" ]; then
 
             if [ "$monitorStyle" = 'status' ]; then warn "\nStatus is now ${slurmJobStatus}" "$quiet" 'no' 1>&2; fi
@@ -267,8 +272,7 @@ slurm_monitor_job() {
 
         # Checking the status from log has the effect of waiting for it to be
         # complete, which we want before we kill the tail
-        
-        slurmLogStatus=$(slurm_job_status_from_log "$jobStdout" "yes")
+        slurmLogStatus=$(slurm_completed_job_status_from_sacct "$jobStdout" "$jobId" "yes")
 
         # If we're tracking the logs, kill the tail processes
 
