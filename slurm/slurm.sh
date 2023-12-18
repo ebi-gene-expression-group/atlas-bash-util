@@ -22,7 +22,7 @@ slurm_submit(){
     # Check parameter settings
 
     if [ -n "$jobQueue" ]; then jobQueue=" -p ${jobQueue}"; fi
-    if [ -n "$jobName" ]; then jobName=" --J ${jobName}"; fi
+    if [ -n "$jobName" ]; then jobName=" -J ${jobName}"; fi
     if [ -n "$slurmMem" ]; then slurmMem=" --mem $slurmMem"; fi
     if [ -n "$nThreads" ]; then nThreads=" --cpus-per-task $nThreads"; fi
     if [ -n "$jobGroupName" ]; then jobGroupName=" --job-group $jobGroupName"; fi
