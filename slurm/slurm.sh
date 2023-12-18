@@ -2,7 +2,7 @@
 
 slurm_submit(){
     local commandString="$1"
-    local jobQueue="$2"
+    local jobQueue="${2:-production}"
     local jobName="$3"
     local slurmMem="$4"
     local nThreads="$5"
