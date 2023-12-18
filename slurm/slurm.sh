@@ -41,7 +41,7 @@ slurm_submit(){
         mkdir -p $(dirname $logPrefix)
         logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""
     fi
-    maxTime=$(slurm_maxtime_for_partition "production")
+    maxTime=$(slurm_maxtime_for_partition "$jobQueue")
     local sbatch_cmd=$(echo -e "sbatch -t $maxTime $jobQueue $jobName $slurmMem $nThreads $jobGroupName $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
 
     local sbatchOutput=
