@@ -21,6 +21,8 @@ slurm_submit(){
 
     # Check parameter settings
 
+    maxTime=$(slurm_maxtime_for_partition "$jobQueue")
+    
     if [ -n "$jobQueue" ]; then jobQueue=" -p ${jobQueue}"; fi
     if [ -n "$jobName" ]; then jobName=" -J ${jobName}"; fi
     if [ -n "$slurmMem" ]; then slurmMem=" --mem $slurmMem"; fi
@@ -41,7 +43,7 @@ slurm_submit(){
         mkdir -p $(dirname $logPrefix)
         logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""
     fi
-    maxTime=$(slurm_maxtime_for_partition "$jobQueue")
+    
     local sbatch_cmd=$(echo -e "sbatch -t $maxTime $jobQueue $jobName $slurmMem $nThreads $jobGroupName $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
     warn "$sbatch_cmd"
     local sbatchOutput=
