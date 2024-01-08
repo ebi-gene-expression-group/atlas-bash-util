@@ -43,7 +43,7 @@ slurm_submit(){
     fi
     maxTime=$(slurm_maxtime_for_partition "$jobQueue")
     local sbatch_cmd=$(echo -e "sbatch -t $maxTime $jobQueue $jobName $slurmMem $nThreads $jobGroupName $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
-
+    warn "$sbatch_cmd"
     local sbatchOutput=
     sbatchOutput=$(eval $sbatch_cmd)
 
