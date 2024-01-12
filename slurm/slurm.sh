@@ -116,7 +116,7 @@ slurm_job_status_from_sacct() {
             # fi    
             warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode and reason $jobReason" "$quiet"
         elif [ "$jobStatus" = 'TIMEOUT' ]; then
-            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f2)
+            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f1)
             jobReason="TIME OUT"
         
             # logMsg=''
@@ -125,7 +125,7 @@ slurm_job_status_from_sacct() {
             # fi    
             warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode and reason $jobReason" "$quiet"
         elif [ "$jobStatus" = 'NODE_FAIL' ]; then
-            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f2)
+            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f1)
             jobReason="NODE_FAIL"
         
             # logMsg=''
@@ -198,7 +198,7 @@ slurm_completed_job_status_from_sacct() {
         jobStatus=DONE
         jobExitCode=0 
     elif [ "$jobStatus" = 'FAILED' ]; then
-        jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f2)
+        jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f1)
         warn "Failure for job ${jobId}${logMsg}" "$quiet"
         jobStatus=EXIT
         if [ -z "$jobExitCode" ]; then
