@@ -107,7 +107,7 @@ slurm_job_status_from_sacct() {
             jobExitCode=0
             warn "Successful run for $jobId!" "$quiet"
         elif [ "$jobStatus" = 'FAILED' ]; then
-            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f2)
+            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f1)
             jobReason=$(echo -e "$jobInfo" | awk '{print $4}')
         
             # logMsg=''
