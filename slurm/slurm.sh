@@ -133,6 +133,10 @@ slurm_job_status_from_sacct() {
             #     logMsg=", check standard out ($jobStdout) and error ($jobStderr) ."
             # fi    
             warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode and reason $jobReason" "$quiet"
+        else
+            jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f1)
+            jobReason=${jobStatus}
+            warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode and reason $jobReason" "$quiet"
         fi
     else
         die "Could not get job info for $jobID"
@@ -206,7 +210,10 @@ slurm_completed_job_status_from_sacct() {
         fi
 
         warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode, check standard out $jobStdout and for error message check $jobStderr" "$quiet"
-        
+    else
+        jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f1)
+        jobReason=${jobStatus}
+        warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode and reason $jobReason" "$quiet"
     fi
 
     echo -n "$jobStatus"
