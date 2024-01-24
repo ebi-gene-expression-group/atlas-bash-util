@@ -162,8 +162,8 @@ This package also contains functions to facilate submissions to our LSF compute 
 Usage:
 
 ```
-atlas-lsf -h
-Usage: ./atlas-lsf [ -c <command string> ] \
+./slurm/atlas-slurm -h
+Usage: ./slurm/atlas-slurm [ -c <command string> ] \
     [ -w <working directory, default current working directory> ] \
     [ -m <memory in Mb, defaults to cluster default> ] \
     [ -p <number of cores, defaults to cluster default> ] \
