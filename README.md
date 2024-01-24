@@ -164,17 +164,21 @@ Usage:
 ```
 ./slurm/atlas-slurm -h
 Usage: ./slurm/atlas-slurm [ -c <command string> ] \
-    [ -w <working directory, default current working directory> ] \
-    [ -m <memory in Mb, defaults to cluster default> ] \
-    [ -p <number of cores, defaults to cluster default> ] \
-    [ -j <job name, defaults to cluster default> ] \
-    [ -g <job group name, defaults to cluster default> ] \
-    [ -l <log prefix, no logs written by default> ] \
-    [ -e <clean up log files after monitored run? Defaults to no> ] \
-    [ -m <monitor submitted job? Defaults to yes> ] \
-    [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
-    [ -q <lsf queue, defaults to cluster default ]
-    [ -v <name of the conda environment in which to run the job> ]
+           [ -w <working directory, default current working directory> ] \
+           [ -m <memory in Mb, defaults to cluster default> ] \
+           [ -p <number of cores, defaults to cluster default> ] \
+           [ -j <job name, defaults to cluster default> ] \
+           [ -g <job group name, defaults to cluster default> ] \
+           [ -l <log prefix, no logs written by default> ] \
+           [ -e <clean up log files after monitored run? Defaults to no> ] \
+           [ -n <monitor submitted job? Defaults to yes> ] \
+           [ -o <with -l, print standard output content? Defaults to no> ] \
+           [ -s <monitor style: 'status' for job status updates on polling, 'std_out_err' to report ongoing content of logs (where used). Defaults to std_out_err> ] \
+           [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
+           [ -q <slurm queue, defaults to cluster default> ] \
+           [ -u <suppress logging output? Default: no> ] \
+           [ -v <name of the conda environment in which to run the job> ]
+
 ```
 Here, memory is a mandatary field for SLURM submission. If memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
 
