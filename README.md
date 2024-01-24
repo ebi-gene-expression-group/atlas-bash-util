@@ -176,9 +176,9 @@ Usage: ./atlas-lsf [ -c <command string> ] \
     [ -q <lsf queue, defaults to cluster default ]
     [ -v <name of the conda environment in which to run the job> ]
 ```
-Here, memory is mendatary field for SLURM submission. If memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
+Here, memory is a mandatary field for SLURM submission. If memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
 
-Here, CPU-time is mendatary field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
+Here, CPU-time is a mandatary field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
 
 Examples:
 
