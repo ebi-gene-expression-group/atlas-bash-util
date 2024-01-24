@@ -23,7 +23,7 @@ Foo
 
 ### LSF wrapper
 
-This package also contains functions to facilate submissions to our LSF compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
+This package also contains functions to facilitate submissions to our LSF compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
 
 Usage:
 
@@ -157,7 +157,7 @@ Job submission succeeded, received job ID 2711148
 
 ### SLURM wrapper
 
-This package also contains functions to facilate submissions to our SLURM compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
+This package also contains functions to facilitate submissions to our SLURM compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
 
 Usage:
 
@@ -180,9 +180,9 @@ Usage: ./slurm/atlas-slurm [ -c <command string> ] \
            [ -v <name of the conda environment in which to run the job> ]
 
 ```
-Here, memory is a mandatary field for SLURM submission. If memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
+Here, memory is a mandatory field for SLURM submission. If memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
 
-Here, CPU-time is a mandatary field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
+Here, CPU-time is a mandatory field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
 
 Examples:
 
