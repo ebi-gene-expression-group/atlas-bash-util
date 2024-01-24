@@ -157,7 +157,7 @@ Job submission succeeded, received job ID 2711148
 
 ### SLURM wrapper
 
-This package also contains functions to facilate submissions to our LSF compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
+This package also contains functions to facilate submissions to our SLURM compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
 
 Usage:
 
