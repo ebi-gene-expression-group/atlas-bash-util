@@ -155,3 +155,35 @@ Job submission succeeded, received job ID 2711148
 /hps/software/users/GTL/user/miniconda3/envs/myenv
 ```
 
+### SLURM wrapper
+
+This package also contains functions to facilate submissions to our LSF compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
+
+Usage:
+
+```
+atlas-lsf -h
+Usage: ./atlas-lsf [ -c <command string> ] \
+    [ -w <working directory, default current working directory> ] \
+    [ -m <memory in Mb, defaults to cluster default> ] \
+    [ -p <number of cores, defaults to cluster default> ] \
+    [ -j <job name, defaults to cluster default> ] \
+    [ -g <job group name, defaults to cluster default> ] \
+    [ -l <log prefix, no logs written by default> ] \
+    [ -e <clean up log files after monitored run? Defaults to no> ] \
+    [ -m <monitor submitted job? Defaults to yes> ] \
+    [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
+    [ -q <lsf queue, defaults to cluster default ]
+    [ -v <name of the conda environment in which to run the job> ]
+```
+Here, memory is a mandatary field for SLURM submission. If memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
+
+Here, CPU-time is a mandatary field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
+
+Examples:
+
+
+Submit and monitor a job, see that it completes without error:
+
+```
+ > slurm/atlas-slurm -c "sleep 10" -f 2 -s status -m 2000
