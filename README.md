@@ -23,7 +23,7 @@ Foo
 
 ### LSF wrapper
 
-This package also contains functions to facilate submissions to our LSF compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
+This package also contains functions to facilitate submissions to our LSF compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
 
 Usage:
 
@@ -157,28 +157,32 @@ Job submission succeeded, received job ID 2711148
 
 ### SLURM wrapper
 
-This package also contains functions to facilate submissions to our LSF compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
+This package also contains functions to facilitate submissions to our SLURM compute cluster, principally this is for interactive waiting for jobs to run and checking of errors.
 
 Usage:
 
 ```
-atlas-lsf -h
-Usage: ./atlas-lsf [ -c <command string> ] \
-    [ -w <working directory, default current working directory> ] \
-    [ -m <memory in Mb, defaults to cluster default> ] \
-    [ -p <number of cores, defaults to cluster default> ] \
-    [ -j <job name, defaults to cluster default> ] \
-    [ -g <job group name, defaults to cluster default> ] \
-    [ -l <log prefix, no logs written by default> ] \
-    [ -e <clean up log files after monitored run? Defaults to no> ] \
-    [ -m <monitor submitted job? Defaults to yes> ] \
-    [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
-    [ -q <lsf queue, defaults to cluster default ]
-    [ -v <name of the conda environment in which to run the job> ]
-```
-Here, memory is a mandatary field for SLURM submission. If memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
+./slurm/atlas-slurm -h
+Usage: ./slurm/atlas-slurm [ -c <command string> ] \
+           [ -w <working directory, default current working directory> ] \
+           [ -m <memory in Mb, defaults to cluster default> ] \
+           [ -p <number of cores, defaults to cluster default> ] \
+           [ -j <job name, defaults to cluster default> ] \
+           [ -g <job group name, defaults to cluster default> ] \
+           [ -l <log prefix, no logs written by default> ] \
+           [ -e <clean up log files after monitored run? Defaults to no> ] \
+           [ -n <monitor submitted job? Defaults to yes> ] \
+           [ -o <with -l, print standard output content? Defaults to no> ] \
+           [ -s <monitor style: 'status' for job status updates on polling, 'std_out_err' to report ongoing content of logs (where used). Defaults to std_out_err> ] \
+           [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
+           [ -q <slurm queue, defaults to cluster default> ] \
+           [ -u <suppress logging output? Default: no> ] \
+           [ -v <name of the conda environment in which to run the job> ]
 
-Here, CPU-time is a mandatary field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
+```
+Here, memory is a mandatory field for SLURM submission. If memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
+
+Here, CPU-time is a mandatory field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
 
 Examples:
 
