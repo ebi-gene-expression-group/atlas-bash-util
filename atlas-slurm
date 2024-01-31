@@ -98,6 +98,12 @@ while getopts ":c:w:m:p:j:g:l:o:e:n:f:q:s:r:v:u:" o; do
     esac
 done
 
+if [[ ! -n "${workingDir}" ]]; then
+    workingDir="$scriptDir"
+elif [[ ! -d "${workingDir}" ]]; then
+    mkdir -p $workingDir
+fi
+
 # Submit the jobs
 # if [ -n "${workingDir}/${logPrefix}.out" ]; then
 #         jobStdout="${workingDir}/${logPrefix}.out"
