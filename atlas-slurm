@@ -105,7 +105,7 @@ elif [ -z "$workingDir" ]; then
 fi
 
 if [[ ! -d "${workingDir}" ]]; then
-    mkdir -p $workingDir
+    mkdir -p "$workingDir" || die "Failed to create directory: $workingDir"
 fi
 
 # Submit the jobs
