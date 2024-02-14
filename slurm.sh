@@ -13,13 +13,6 @@ slurm_submit(){
     local condaEnv="${10}"
     local quiet="${11:-'no'}"
 
-    # Need at least the command string
-
-    if [ -z "$commandString" ]; then
-        die "Need at least a command string for SLURM submission"
-    fi
-
-    # Check parameter settings
 
     maxTime=$(slurm_maxtime_for_partition "$jobQueue")
     

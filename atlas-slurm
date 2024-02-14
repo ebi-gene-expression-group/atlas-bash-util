@@ -4,8 +4,8 @@ scriptDir=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $scriptDir/generic_routines.sh
 source $scriptDir/slurm.sh
 
-usageOpts="[ -c <command string> ] \
-           [ -w <working directory, default current working directory> ] \
+usageOpts="[ -c <command string, mandatory field> ] \
+           [ -w <working directory, mandatory field> ] \
            [ -m <memory in Mb, defaults to cluster default> ] \
            [ -p <number of cores, defaults to cluster default> ] \
            [ -j <job name, defaults to cluster default> ] \
@@ -98,10 +98,14 @@ while getopts ":c:w:m:p:j:g:l:o:e:n:f:q:s:r:v:u:" o; do
     esac
 done
 
-if [[ ! -n "${workingDir}" ]]; then
-    workingDir="$scriptDir"
-elif [[ ! -d "${workingDir}" ]]; then
-    mkdir -p $workingDir
+if [ -z "$commandString" ]; then
+    die "Need at least a command string for SLURM submission"
+elif [ -z "$workingDir" ]; then
+    die "Needs a workingDir specified (-w) for SLURM submission"
+fi
+
+if [[ ! -d "${workingDir}" ]]; then
+    mkdir -p "$workingDir" || die "Failed to create directory: $workingDir"
 fi
 
 # Submit the jobs

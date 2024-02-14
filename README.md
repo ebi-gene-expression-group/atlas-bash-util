@@ -163,8 +163,8 @@ Usage:
 
 ```
 ./slurm/atlas-slurm -h
-Usage: ./slurm/atlas-slurm [ -c <command string> ] \
-           [ -w <working directory, default current working directory> ] \
+Usage: ./slurm/atlas-slurm [ -c <command string, mandatory field> ] \
+           [ -w <working directory, mandatory field> ] \
            [ -m <memory in Mb, defaults to cluster default> ] \
            [ -p <number of cores, defaults to cluster default> ] \
            [ -j <job name, defaults to cluster default> ] \
@@ -180,7 +180,7 @@ Usage: ./slurm/atlas-slurm [ -c <command string> ] \
            [ -v <name of the conda environment in which to run the job> ]
 
 ```
-Here, memory is a mandatory field for SLURM submission. If memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
+Here, command (`-c`) and working directory (`-w`) are mandatory field for `atlas-slurm`. Specifying memory (`-m`) is advised, if memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
 
 Here, CPU-time is a mandatory field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
 
@@ -190,4 +190,4 @@ Examples:
 Submit and monitor a job, see that it completes without error:
 
 ```
- > slurm/atlas-slurm -c "sleep 10" -f 2 -s status -m 2000
+ > slurm/atlas-slurm -c "sleep 10" -f 2 -s status -m 2000 -w "/tmp" 
