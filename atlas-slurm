@@ -98,6 +98,14 @@ while getopts ":c:w:m:p:j:g:l:o:e:n:f:q:s:r:v:u:" o; do
     esac
 done
 
+if [ -z "$commandString" ]; then
+    die "Need at least a command string for SLURM submission"
+fi
+
+if [ -z "$workingDir" ]; then
+    die "Needs a workingDir specified (-w) for SLURM submission"
+fi
+
 if [[ ! -d "${workingDir}" ]]; then
     mkdir -p $workingDir
 fi
