@@ -128,7 +128,7 @@ else
             logFile=${logPrefix}.out
         fi 
 	sleep 10
-	slurm_monitor_job "$slurmJobId" "$pollFreqSecs" "${workingDir}/${logFile}" "$monitorStyle" "$logCleanup" "$returnStdout" "$quiet"
+	slurm_monitor_job "$slurmJobId" "$pollFreqSecs" "$logFile" "$monitorStyle" "$logCleanup" "$returnStdout" "$quiet"
         slurmExitCode=$?
 
         if [ $slurmExitCode -ne 0 ]; then
