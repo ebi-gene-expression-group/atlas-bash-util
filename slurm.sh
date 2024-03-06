@@ -5,13 +5,12 @@ slurm_submit(){
     local jobQueue="${2:-production}"
     local jobName="$3"
     local slurmMem="${4:-4000}"
-    local nThreads="$5"
-    local jobGroupName="$6"       
-    local workingDir="$7"
-    local logPrefix="$8"
-    local prioritise="$9"
-    local condaEnv="${10}"
-    local quiet="${11:-'no'}"
+    local nThreads="$5"     
+    local workingDir="$6"
+    local logPrefix="$7"
+    local prioritise="$8"
+    local condaEnv="${9}"
+    local quiet="${10:-'no'}"
 
 
     maxTime=$(slurm_maxtime_for_partition "$jobQueue")
@@ -20,7 +19,6 @@ slurm_submit(){
     if [ -n "$jobName" ]; then jobName=" -J ${jobName}"; fi
     if [ -n "$slurmMem" ]; then slurmMem=" --mem $slurmMem"; fi
     if [ -n "$nThreads" ]; then nThreads=" --cpus-per-task $nThreads"; fi
-    if [ -n "$jobGroupName" ]; then jobGroupName=" --job-group $jobGroupName"; fi
     if [ -n "$workingDir" ]; then workingDir=" --chdir \"$workingDir\""; fi
     if [ -n "$condaEnv" ]; then
         condaBase=$(conda info --json | awk '/conda_prefix/ { gsub(/"|,/, "", $2); print $2 }')
@@ -37,7 +35,7 @@ slurm_submit(){
         logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""
     fi
     
-    local sbatch_cmd=$(echo -e "sbatch -t $maxTime $jobQueue $jobName $slurmMem $nThreads $jobGroupName $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
+    local sbatch_cmd=$(echo -e "sbatch -t $maxTime $jobQueue $jobName $slurmMem $nThreads $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
     warn "$sbatch_cmd"
     local sbatchOutput=
     sbatchOutput=$(eval $sbatch_cmd)
