@@ -31,7 +31,7 @@ Usage:
 atlas-lsf -h
 Usage: ./atlas-lsf [ -c <command string> ] \
     [ -w <working directory, default current working directory> ] \
-    [ -m <memory in Mb, defaults to cluster default> ] \
+    [ -m <memory in Mb or in the format <size>[units], defaults to cluster default> ] \
     [ -p <number of cores, defaults to cluster default> ] \
     [ -j <job name, defaults to cluster default> ] \
     [ -g <job group name, defaults to cluster default> ] \
@@ -165,7 +165,7 @@ Usage:
 ./slurm/atlas-slurm -h
 Usage: ./slurm/atlas-slurm [ -c <command string, mandatory field> ] \
            [ -w <working directory, mandatory field> ] \
-           [ -m <memory in Mb, defaults to cluster default> ] \
+           [ -m <memory in Mb or in the format <size>[units], defaults to cluster default> ] \
            [ -p <number of cores, defaults to cluster default> ] \
            [ -j <job name, defaults to cluster default> ] \
            [ -g <job group name, defaults to cluster default> ] \
@@ -180,7 +180,7 @@ Usage: ./slurm/atlas-slurm [ -c <command string, mandatory field> ] \
            [ -v <name of the conda environment in which to run the job> ]
 
 ```
-Here, command (`-c`) and working directory (`-w`) are mandatory field for `atlas-slurm`. Specifying memory (`-m`) is advised, if memory is not specified with `-m` flag, it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
+Here, command (`-c`) and working directory (`-w`) are mandatory field for `atlas-slurm`. Specifying memory (`-m`) is advised, if memory is not specified with `-m` flag (e.g. `-m 1G`), it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
 
 Here, CPU-time is a mandatory field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
 
