@@ -31,7 +31,7 @@ Usage:
 atlas-lsf -h
 Usage: ./atlas-lsf [ -c <command string> ] \
     [ -w <working directory, default current working directory> ] \
-    [ -m <memory in Mb or in the format <size>[units], defaults to cluster default> ] \
+    [ -m <memory in MB or in the format <size>[units], defaults to cluster default. Different units can be specified using the suffix [K|M|G|T]> ] \
     [ -p <number of cores, defaults to cluster default> ] \
     [ -j <job name, defaults to cluster default> ] \
     [ -g <job group name, defaults to cluster default> ] \
@@ -165,7 +165,7 @@ Usage:
 ./slurm/atlas-slurm -h
 Usage: ./slurm/atlas-slurm [ -c <command string, mandatory field> ] \
            [ -w <working directory, mandatory field> ] \
-           [ -m <memory in Mb or in the format <size>[units], defaults to cluster default> ] \
+           [ -m <memory in MB or in the format <size>[units], defaults to cluster default. Different units can be specified using the suffix [K|M|G|T]> ] \
            [ -p <number of cores, defaults to cluster default> ] \
            [ -j <job name, defaults to cluster default> ] \
            [ -g <job group name, defaults to cluster default> ] \
