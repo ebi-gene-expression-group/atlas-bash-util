@@ -8,6 +8,7 @@ usageOpts="[ -c <command string, mandatory field> ] \
            [ -w <working directory, mandatory field> ] \
            [ -m <memory in MB or in the format <size>[units], defaults to cluster default. Different units can be specified using the suffix [K|M|G|T]> ] \
            [ -p <number of cores, defaults to cluster default> ] \
+           [ -t <allocated maxtime, defaults to max allowed time for partition> ] \
            [ -j <job name, defaults to cluster default> ] \
            [ -l <log prefix, no logs written by default> ] \
            [ -e <clean up log files after monitored run? Defaults to no> ] \
@@ -28,6 +29,7 @@ commandString=
 workingDir=
 memory=
 cores=
+maxTime=
 jobName=
 queue=
 logPrefix=
@@ -52,6 +54,9 @@ while getopts ":c:w:m:p:j:g:l:o:e:n:f:q:s:r:v:u:" o; do
             ;;
         p)
             cores=${OPTARG}
+            ;;
+        t)
+            maxTime=${OPTARG}
             ;;
         j)
             jobName=${OPTARG}
@@ -103,13 +108,17 @@ if [[ ! -d "${workingDir}" ]]; then
     mkdir -p "$workingDir" || die "Failed to create directory: $workingDir"
 fi
 
+if [ -z "$maxTime" ]; then
+    maxTime=$(slurm_maxtime_for_partition "$jobQueue")
+fi
+
 # Submit the jobs
 # if [ -n "${workingDir}/${logPrefix}.out" ]; then
 #         jobStdout="${workingDir}/${logPrefix}.out"
 #         jobStderr="${workingDir}/${logPrefix}.err"
 #         rm -rf $jobStdout $jobStderr
 #     fi
-slurmJobId=$(slurm_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$workingDir" "$logPrefix" "$prioritise" "$condaEnv" "$quiet")
+slurmJobId=$(slurm_submit "$commandString" "$queue" "$jobName" "$memory" "$cores" "$maxTime" "$workingDir" "$logPrefix" "$prioritise" "$condaEnv" "$quiet")
 submitStatus=$?
 
 if [ "$submitStatus" -ne "0" ] && [ -n "$slurmJobId" ]; then
