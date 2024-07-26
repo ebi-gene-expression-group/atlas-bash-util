@@ -108,8 +108,12 @@ if [[ ! -d "${workingDir}" ]]; then
     mkdir -p "$workingDir" || die "Failed to create directory: $workingDir"
 fi
 
+if [ -z "$queue" ]; then
+    queue="production"
+fi
+
 if [ -z "$maxTime" ]; then
-    maxTime=$(slurm_maxtime_for_partition "$jobQueue")
+    maxTime=$(slurm_maxtime_for_partition "$queue")
 fi
 
 # Submit the jobs
