@@ -41,7 +41,7 @@ monitorStyle=std_out_err
 prioritise=no
 quiet=no
 
-while getopts ":c:w:m:p:j:g:l:o:e:n:f:q:s:r:v:u:" o; do
+while getopts ":c:w:m:p:t:j:g:l:o:e:n:f:q:s:r:v:u:" o; do
     case "${o}" in
         c)
             commandString=${OPTARG}
