@@ -2,18 +2,16 @@
 
 slurm_submit(){
     local commandString="$1"
-    local jobQueue="${2:-production}"
+    local jobQueue="${2}"
     local jobName="$3"
     local slurmMem="${4:-4000}"
     local nThreads="$5"     
-    local workingDir="$6"
-    local logPrefix="$7"
-    local prioritise="$8"
-    local condaEnv="${9}"
-    local quiet="${10:-'no'}"
-
-
-    maxTime=$(slurm_maxtime_for_partition "$jobQueue")
+    local maxTime="$6"     
+    local workingDir="$7"
+    local logPrefix="$8"
+    local prioritise="$9"
+    local condaEnv="${10}"
+    local quiet="${11:-'no'}"
     
     if [ -n "$jobQueue" ]; then jobQueue=" -p ${jobQueue}"; fi
     if [ -n "$jobName" ]; then jobName=" -J ${jobName}"; fi

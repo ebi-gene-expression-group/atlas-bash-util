@@ -163,10 +163,11 @@ Usage:
 
 ```
 ./slurm/atlas-slurm -h
-Usage: ./slurm/atlas-slurm [ -c <command string, mandatory field> ] \
+Usage: ./atlas-slurm [ -c <command string, mandatory field> ] \
            [ -w <working directory, mandatory field> ] \
            [ -m <memory in MB or in the format <size>[units], defaults to cluster default. Different units can be specified using the suffix [K|M|G|T]> ] \
            [ -p <number of cores, defaults to cluster default> ] \
+           [ -t <allocated maxtime, defaults to max allowed time for queue/partition. SLURM accepted format> ]
            [ -j <job name, defaults to cluster default> ] \
            [ -g <job group name, defaults to cluster default> ] \
            [ -l <log prefix, no logs written by default> ] \
@@ -175,12 +176,12 @@ Usage: ./slurm/atlas-slurm [ -c <command string, mandatory field> ] \
            [ -o <with -l, print standard output content? Defaults to no> ] \
            [ -s <monitor style: 'status' for job status updates on polling, 'std_out_err' to report ongoing content of logs (where used). Defaults to std_out_err> ] \
            [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
-           [ -q <slurm queue, defaults to cluster default> ] \
+           [ -q <slurm queue/partition, defaults to cluster default> ] \
            [ -u <suppress logging output? Default: no> ] \
            [ -v <name of the conda environment in which to run the job> ]
 
 ```
-Here, command (`-c`) and working directory (`-w`) are mandatory field for `atlas-slurm`. Specifying memory (`-m`) is advised, if memory is not specified with `-m` flag (e.g. `-m 1G`), it will use 4000Mb by default. If queue/partition is not specified it will use production by default. 
+Here, command (`-c`) and working directory (`-w`) are mandatory field for `atlas-slurm`. Specifying memory (`-m`) is advised, if memory is not specified with `-m` flag (e.g. `-m 1G`), it will use 4000Mb by default. Specifying time (`-t`) is advised, if time is not specified with `-t` flag (e.g. `-t 1:00:00`), it will use max allowed time for the queue/partition by default. If queue/partition is not specified it will use production by default. 
 
 Here, CPU-time is a mandatory field for SLURM submission. It will allocate maximum allowed time for the partition/queue by default.
 
