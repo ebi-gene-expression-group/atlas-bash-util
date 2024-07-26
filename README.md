@@ -167,7 +167,7 @@ Usage: ./atlas-slurm [ -c <command string, mandatory field> ] \
            [ -w <working directory, mandatory field> ] \
            [ -m <memory in MB or in the format <size>[units], defaults to cluster default. Different units can be specified using the suffix [K|M|G|T]> ] \
            [ -p <number of cores, defaults to cluster default> ] \
-           [ -t <allocated maxtime, defaults to max allowed time for queue/partition. Format dd:hh:mm> ]
+           [ -t <allocated maxtime, defaults to max allowed time for queue/partition. SLURM accepted format> ]
            [ -j <job name, defaults to cluster default> ] \
            [ -g <job group name, defaults to cluster default> ] \
            [ -l <log prefix, no logs written by default> ] \
