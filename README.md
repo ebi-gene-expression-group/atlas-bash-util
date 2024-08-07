@@ -175,7 +175,7 @@ Usage: ./atlas-slurm [ -c <command string, mandatory field> ] \
            [ -n <monitor submitted job? Defaults to yes> ] \
            [ -o <with -l, print standard output content? Defaults to no> ] \
            [ -s <monitor style: 'status' for job status updates on polling, 'std_out_err' to report ongoing content of logs (where used). Defaults to std_out_err> ] \
-           [ -f <poll frequency in seconds if job is monitored. Defaults to 10.> ] \
+           [ -f <poll frequency in seconds if job is monitored. Defaults to 60.> ] \
            [ -q <slurm queue/partition, defaults to cluster default> ] \
            [ -u <suppress logging output? Default: no> ] \
            [ -v <name of the conda environment in which to run the job> ]

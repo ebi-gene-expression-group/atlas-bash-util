@@ -211,7 +211,7 @@ slurm_completed_job_status_from_sacct() {
 
 slurm_monitor_job() {
     local jobId=$1
-    local pollSecs=${2:-30}
+    local pollSecs=${2:-60}
     local jobStdout=$3
     local jobStderr=
     local monitorStyle=${4:-'std_out_err'}
