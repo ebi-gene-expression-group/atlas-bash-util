@@ -135,6 +135,18 @@ slurm_job_status_from_sacct() {
     return $jobExitCode
 }
 
+# Get slurm job accounting info
+
+slurm_resource_usage_summary(){
+    local jobId=$1
+
+    check_variables 'jobId'
+
+    local jobInfo="$(seff $jobId)"
+
+    return $jobInfo
+}
+
 # Check slurm status for a job
 
 slurm_completed_job_status_from_sacct() {
@@ -164,7 +176,7 @@ slurm_completed_job_status_from_sacct() {
         die "$jobStdout still absent, something strange with job $jobId"
     fi
     
-    # Wait for log file to be complete
+    # Wait for log file to be complete (change this into lsof or fuserf, but currently being tested #########)
 
     local logComplete=1
     checkCount=0
@@ -204,6 +216,10 @@ slurm_completed_job_status_from_sacct() {
         jobReason=${jobStatus}
         warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode and reason $jobReason" "$quiet"
     fi
+
+    # Add summary statistics
+    summaryStats="$(slurm_resource_usage_summary $jobId)"
+    warn "\n\n${summaryStats}" "$quiet"
 
     echo -n "$jobStatus"
     return $jobExitCode
