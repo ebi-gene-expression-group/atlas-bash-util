@@ -32,6 +32,13 @@ slurm_submit(){
         mkdir -p $(dirname $logPrefix)
         logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""
     fi
+
+    # This is to prioritise a job; test first, then add $priority to the sbatch command
+    # priority=""
+    # if [ "$prioritise" = 'yes' ]; then
+    #     warn "Prioritising $jobId" "$quiet"
+    #     priority=1000000
+    # fi
     
     local sbatch_cmd=$(echo -e "sbatch -t $maxTime $jobQueue $jobName $slurmMem $nThreads $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
     warn "$sbatch_cmd"
@@ -45,10 +52,6 @@ slurm_submit(){
     else
         local jobId=$(echo $sbatchOutput | grep -oE 'Submitted batch job [0-9]+')
         job_id=${jobId##* }
-        # if [ "$prioritise" = 'yes' ]; then
-        #     warn "Prioritising $jobId" "$quiet"
-        #     btop $jobId
-        # fi
         echo $job_id
     fi
 }
