@@ -286,10 +286,6 @@ slurm_monitor_job() {
         # Checking the status from log has the effect of waiting for it to be
         # complete, which we want before we kill the tail
         slurmLogStatus=$(slurm_completed_job_status_from_sacct "$jobStdout" "$jobId" "yes")
-        
-        # Generate summary statistics
-        summaryStats=$( seff $jobId )
-        warn "\n\n${summaryStats}" "$quiet"
 
         # If we're tracking the logs, kill the tail processes
 
@@ -312,6 +308,11 @@ slurm_monitor_job() {
             rm -rf $jobStdout $jobStderr
         fi
     fi
+    
+    # Generate summary statistics
+    summaryStats=$( seff $jobId )
+    warn "\n\n${summaryStats}" "$quiet"
+
     return $slurmExitCode
 }
 
