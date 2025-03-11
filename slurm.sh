@@ -138,16 +138,16 @@ slurm_job_status_from_sacct() {
     return $jobExitCode
 }
 
-# Get slurm job accounting info
+# Get slurm job resource usage and efficiency statistics
 
 slurm_resource_usage_summary(){
     local jobId=$1
 
     check_variables 'jobId'
 
-    local jobInfo="$(seff $jobId)"
+    local jobInfo="$(seff $jobId 2> /dev/null )"
 
-    return $jobInfo
+    echo "${jobInfo}"
 }
 
 # Check slurm status for a job

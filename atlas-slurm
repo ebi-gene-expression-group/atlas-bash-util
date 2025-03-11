@@ -145,7 +145,7 @@ else
     fi
 
     # Generate summary statistics
-    summaryStats=$( seff $slurmJobId 2> /dev/null )
+    summaryStats=$( slurm_resource_usage_summary $slurmJobId 2> /dev/null )
     warn "\n\n${summaryStats}" "$quiet"
 
 fi
