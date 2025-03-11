@@ -141,10 +141,11 @@ else
 
         if [ $slurmExitCode -ne 0 ]; then
             die "Command \"$commandString\" failed" "$slurmExitCode" "$quiet"
-        else
-            # Generate summary statistics
-            summaryStats=$( seff $slurmJobId )
-            warn "\n\n${summaryStats}" "$quiet"
         fi
     fi
+
+    # Generate summary statistics
+    summaryStats=$( seff $slurmJobId )
+    warn "\n\n${summaryStats}" "$quiet"
+
 fi
