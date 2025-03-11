@@ -308,10 +308,6 @@ slurm_monitor_job() {
             rm -rf $jobStdout $jobStderr
         fi
     fi
-    
-    # Generate summary statistics
-    summaryStats=$( seff $jobId )
-    warn "\n\n${summaryStats}" "$quiet"
 
     return $slurmExitCode
 }
