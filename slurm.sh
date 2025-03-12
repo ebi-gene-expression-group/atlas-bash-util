@@ -181,8 +181,8 @@ slurm_completed_job_status_from_sacct() {
     
     # Wait for log file to be complete
 
-    local logComplete=1
-    checkCount=0
+    # local logComplete=1
+    # checkCount=0
 
     # while [ "$logComplete" -eq "1" ]; do
     #     grep -q "for stderr output of this job." $jobStdout
@@ -196,7 +196,6 @@ slurm_completed_job_status_from_sacct() {
     # fi
 
     # Now get the info part of the log
-
 
     local jobInfo="$(sacct -j $jobId --format=jobid,state,exitCode,reason --noheader | grep -vE '\.ba\+|\.ex\+' -m 1)" #ignores .ba and .ex entries
     local jobStatus=$(echo -e "$jobInfo" | awk '{print $2}')
@@ -212,7 +211,6 @@ slurm_completed_job_status_from_sacct() {
         if [ -z "$jobExitCode" ]; then
             jobExitCode=1
         fi
-
         warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode, check standard out $jobStdout and for error message check $jobStderr" "$quiet"
     else
         jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f1)
@@ -276,11 +274,6 @@ slurm_monitor_job() {
             lastStatus=$slurmJobStatus
         fi
     done
-
-    # Generate summary statistics
-    summaryStats=$( slurm_resource_usage_summary $slurmJobId 2> /dev/null )
-    # warn "\n\n${summaryStats}" "$quiet"
-    echo -e "\n\n${summaryStats}"
 
     if [ "$monitorStyle" = 'status' ]; then warn "\n" "$quiet"; fi
 
