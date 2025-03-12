@@ -179,7 +179,7 @@ slurm_completed_job_status_from_sacct() {
         die "$jobStdout still absent, something strange with job $jobId"
     fi
     
-    # Wait for log file to be complete (change this into lsof or fuserf, but currently being tested #########)
+    # Wait for log file to be complete
 
     local logComplete=1
     checkCount=0
@@ -276,6 +276,11 @@ slurm_monitor_job() {
             lastStatus=$slurmJobStatus
         fi
     done
+
+    # Generate summary statistics
+    summaryStats=$( slurm_resource_usage_summary $slurmJobId 2> /dev/null )
+    # warn "\n\n${summaryStats}" "$quiet"
+    echo -e "\n\n${summaryStats}"
 
     if [ "$monitorStyle" = 'status' ]; then warn "\n" "$quiet"; fi
 
