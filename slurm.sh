@@ -145,7 +145,7 @@ slurm_resource_usage_summary(){
 
     check_variables 'jobId'
 
-    local jobInfo="$(seff $jobId 2> /dev/null )"
+    local jobInfo="$(seff $jobId )"
 
     echo "${jobInfo}"
 }
