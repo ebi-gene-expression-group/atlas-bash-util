@@ -285,6 +285,14 @@ slurm_monitor_job() {
         # complete, which we want before we kill the tail
         slurmLogStatus=$(slurm_completed_job_status_from_sacct "$jobStdout" "$jobId" "yes")
 
+        # Generate summary statistics
+        summaryStats=$( slurm_resource_usage_summary $slurmJobId )
+        if [[ -z "$summaryStats" ]]; then
+            warn "Warning: No SLURM job efficiency report generated." "$quiet"
+        else
+            warn "\n\n==SLURM job efficiency report==\n${summaryStats}" "$quiet"
+        fi
+
         # If we're tracking the logs, kill the tail processes
 
         if [ "$monitorStyle" = 'std_out_err' ]; then

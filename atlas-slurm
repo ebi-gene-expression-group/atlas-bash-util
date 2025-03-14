@@ -144,12 +144,4 @@ else
         fi
     fi
 
-    # Generate summary statistics
-    summaryStats=$( slurm_resource_usage_summary $slurmJobId )
-    if [[ -z "$summaryStats" ]]; then
-        warn "Warning: No SLURM job efficiency report generated." "$quiet"
-    else
-        warn "\n\n==SLURM job efficiency report==\n${summaryStats}" "$quiet"
-    fi
-
 fi
