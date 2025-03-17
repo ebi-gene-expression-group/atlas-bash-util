@@ -32,6 +32,13 @@ slurm_submit(){
         mkdir -p $(dirname $logPrefix)
         logPrefix=" -o \"${logPrefix}.out\" -e \"${logPrefix}.err\""
     fi
+
+    # This is to prioritise a job; test first, then add $priority to the sbatch command
+    # priority=""
+    # if [ "$prioritise" = 'yes' ]; then
+    #     warn "Prioritising $jobId" "$quiet"
+    #     priority=1000000
+    # fi
     
     local sbatch_cmd=$(echo -e "sbatch -t $maxTime $jobQueue $jobName $slurmMem $nThreads $workingDir $logPrefix --wrap \"$commandString\"" | tr -s " ")
     warn "$sbatch_cmd"
@@ -45,10 +52,6 @@ slurm_submit(){
     else
         local jobId=$(echo $sbatchOutput | grep -oE 'Submitted batch job [0-9]+')
         job_id=${jobId##* }
-        # if [ "$prioritise" = 'yes' ]; then
-        #     warn "Prioritising $jobId" "$quiet"
-        #     btop $jobId
-        # fi
         echo $job_id
     fi
 }
@@ -135,6 +138,18 @@ slurm_job_status_from_sacct() {
     return $jobExitCode
 }
 
+# Get slurm job resource usage and efficiency statistics
+
+slurm_resource_usage_summary(){
+    local jobId=$1
+
+    check_variables 'jobId'
+
+    local jobInfo="$(seff $jobId )"
+
+    echo "${jobInfo}"
+}
+
 # Check slurm status for a job
 
 slurm_completed_job_status_from_sacct() {
@@ -166,8 +181,8 @@ slurm_completed_job_status_from_sacct() {
     
     # Wait for log file to be complete
 
-    local logComplete=1
-    checkCount=0
+    # local logComplete=1
+    # checkCount=0
 
     # while [ "$logComplete" -eq "1" ]; do
     #     grep -q "for stderr output of this job." $jobStdout
@@ -181,7 +196,6 @@ slurm_completed_job_status_from_sacct() {
     # fi
 
     # Now get the info part of the log
-
 
     local jobInfo="$(sacct -j $jobId --format=jobid,state,exitCode,reason --noheader | grep -vE '\.ba\+|\.ex\+' -m 1)" #ignores .ba and .ex entries
     local jobStatus=$(echo -e "$jobInfo" | awk '{print $2}')
@@ -197,7 +211,6 @@ slurm_completed_job_status_from_sacct() {
         if [ -z "$jobExitCode" ]; then
             jobExitCode=1
         fi
-
         warn "Job $jobId had exit status ${jobStatus}, error code $jobExitCode, check standard out $jobStdout and for error message check $jobStderr" "$quiet"
     else
         jobExitCode=$(echo -e "$jobInfo" | awk '{print $3}' | cut -d':' -f1)
@@ -272,6 +285,14 @@ slurm_monitor_job() {
         # complete, which we want before we kill the tail
         slurmLogStatus=$(slurm_completed_job_status_from_sacct "$jobStdout" "$jobId" "yes")
 
+        # Generate summary statistics
+        summaryStats=$( slurm_resource_usage_summary $slurmJobId )
+        if [[ -z "$summaryStats" ]]; then
+            warn "Warning: No SLURM job efficiency report generated." "$quiet"
+        else
+            warn "\n\n==SLURM job efficiency report==\n${summaryStats}" "$quiet"
+        fi
+
         # If we're tracking the logs, kill the tail processes
 
         if [ "$monitorStyle" = 'std_out_err' ]; then
@@ -293,6 +314,7 @@ slurm_monitor_job() {
             rm -rf $jobStdout $jobStderr
         fi
     fi
+
     return $slurmExitCode
 }
 
