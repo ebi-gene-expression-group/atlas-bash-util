@@ -226,7 +226,6 @@ slurm_monitor_job() {
     local jobId=$1
     local pollSecs=${2:-60}
     local jobStdout=$3
-    local jobStderr=
     local monitorStyle=${4:-'std_out_err'}
     local logCleanup=${5:-'no'}
     local returnStdout=${6:-'no'}
