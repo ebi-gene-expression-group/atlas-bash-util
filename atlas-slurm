@@ -79,9 +79,6 @@ while getopts ":c:w:m:p:t:j:g:l:o:e:n:f:q:s:r:v:u:" o; do
         s)
             monitorStyle=${OPTARG}
             ;;
-        r)
-            prioritise=${OPTARG}
-            ;;
         o)
             returnStdout=${OPTARG}
             ;;
